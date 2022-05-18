@@ -1,0 +1,15 @@
+/.classpath
+/frontend
+/node_modules
+/package.json
+/package-lock.json
+/.project
+/.settings
+/target
+/tsconfig.json
+/types.d.ts
+/webpack.config.js
+/webpack.generated.js
+/database
+local.vimrc
+Session.vim
