@@ -37,6 +37,7 @@ public class MainView extends AppLayout {
 		final List<Tab> tabs = new ArrayList<>(4);
 		tabs.add(createTab(VaadinIcon.LIST_SELECT, "Vote", VoteView.class));
 		tabs.add(createTab(VaadinIcon.STOP_COG, "Stop Polling Station", StopPollingStationView.class));
+		tabs.add(createTab(VaadinIcon.COGS, "New session", NewSessionView.class));
 		tabs.add(createTab(VaadinIcon.SIGN_OUT, "Logout", LogoutView.class));
 		return tabs.toArray(new Tab[tabs.size()]);
 	}
