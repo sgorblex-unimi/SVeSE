@@ -1,4 +1,4 @@
-package org.miniblex.svese.views;
+package org.miniblex.svese.views.login;
 
 import com.vaadin.flow.component.login.LoginOverlay;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;

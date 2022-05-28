@@ -1,4 +1,4 @@
-package org.miniblex.svese.views;
+package org.miniblex.svese.views.main;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,6 +13,11 @@ import com.vaadin.flow.component.tabs.Tab;
 import com.vaadin.flow.component.tabs.TabVariant;
 import com.vaadin.flow.component.tabs.Tabs;
 import com.vaadin.flow.router.RouterLink;
+
+import org.miniblex.svese.views.newSession.NewSessionView;
+import org.miniblex.svese.views.logout.LogoutView;
+import org.miniblex.svese.views.stopPollingStation.StopPollingStationView;
+import org.miniblex.svese.views.vote.VoteView;
 
 /**
  * Menu on the top of the screen, with links to the other views

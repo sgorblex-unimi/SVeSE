@@ -2,7 +2,7 @@ package org.miniblex.svese.security;
 
 import com.vaadin.flow.spring.security.VaadinWebSecurityConfigurerAdapter;
 
-import org.miniblex.svese.views.LoginView;
+import org.miniblex.svese.views.login.LoginView;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;

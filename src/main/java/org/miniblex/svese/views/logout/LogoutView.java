@@ -1,53 +1,51 @@
-package org.miniblex.svese.views;
+package org.miniblex.svese.views.logout;
 
 import javax.annotation.security.PermitAll;
 
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.dialog.Dialog;
+import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.component.select.Select;
 import com.vaadin.flow.router.Route;
 
 import org.miniblex.svese.security.SecurityService;
+import org.miniblex.svese.views.main.MainView;
 
 /**
- * Voting interface
+ * Logout user interface
  */
 @PermitAll
-@Route(value = "/vote", layout = MainView.class)
-public class VoteView extends VerticalLayout {
+@Route(value = "/logout", layout = MainView.class)
+// TODO: possibly substitute with logout button
+public class LogoutView extends Div {
 	Dialog dialog = new Dialog();
-	private Button confirmButton = new Button("Confirm", e -> dialog.open());
+	private Button stopButton = new Button("Logout", e -> dialog.open());
 
-	public VoteView(SecurityService securityService) {
-
-		Select<String> dropdown = new Select<>();
-		dropdown.setLabel("Select your choice");
-		dropdown.setItems("Example 1", "Example 2", "Example 3");
-		dropdown.setValue("Example 1");
-
-		VerticalLayout dialogLayout = confirmVoteDialog();
+	public LogoutView(SecurityService securityService) {
+		VerticalLayout dialogLayout = createLogoutDialog(securityService);
 		dialog.add(dialogLayout);
-		add(dialog, dropdown, confirmButton);
-		getStyle().set("position", "fixed").set("top", "0").set("right", "0").set("bottom", "0").set("left", "0").set("display", "flex").set("align-items", "center").set("justify-content", "center");
+		add(dialog, stopButton);
+		getStyle().set("position", "fixed").set("top", "0").set("right", "0").set("bottom", "0").set("left", "0")
+				.set("display", "flex").set("align-items", "center").set("justify-content", "center");
 	}
 
 	/**
-	 * Creates a vertical layout that is used to create the dialog to confirm vote.
+	 * Creates a vertical layout that is used to create the logout dialog.
 	 * 
-	 * @return A {@link VerticalLayout} with all the dialog components for user
-	 *         interaction.
+	 * @param securityService
+	 *          security components used to logout and delete session information.
+	 * @return A {@link VerticalLayout} with all the components in the layout.
 	 */
-	private VerticalLayout confirmVoteDialog() {
+	private VerticalLayout createLogoutDialog(SecurityService securityService) {
 		H2 headline = new H2("Are you sure?");
 		headline.getStyle().set("margin-top", "0");
 
 		Button confirmButton = new Button("Confirm", e -> {
-			// TODO Store preferences
+			securityService.logout();
 			dialog.close();
 		});
 		Button cancelButton = new Button("Cancel", e -> dialog.close());
