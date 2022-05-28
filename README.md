@@ -51,6 +51,16 @@ An incomprehensive list of TODOs. Also check code TODOs.
 - [ ] persistence
 - [x] login role mechanism
 
+#### View
+- [ ] DEPENDS ON GUARANTORS: fix the inizialitation of sessions replacing Person with Guarantors
+- [ ] improve choices visualization during the creation of a session (Simple or Composite)
+- [ ] check and deny multiple insertion of the same choice during creation of a voting paper
+- [ ] Check required fields before accepting new Choices
+- [ ] Add constraint on method, sub boting paper and number of choice (Preferenced and referendum)
+- [x] improve subvoting paper creation dialog (remove esc to quit and fix grid refresh)
+- [ ] Create view to add more than one voting paper to a session
+
+
 #### Model
 - [ ] voting stations and managers
 - [x] guarantors
