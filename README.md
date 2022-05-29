@@ -13,7 +13,6 @@ An uncomprensive list of TODOs. Also check code TODOs.
 
 ### Java
 - [ ] use sets instead of lists when appropriate
-- [ ] immutable choice; votingpaper can be composite, in which case it has a map mapping valid choices to the respective sub-votingpaper
 - [ ] actual implementations
 
 ### Shell script

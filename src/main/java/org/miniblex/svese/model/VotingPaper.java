@@ -1,8 +1,11 @@
 package org.miniblex.svese.model;
 
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
@@ -12,12 +15,26 @@ import org.apache.commons.lang3.NotImplementedException;
  * Implementation of a voting paper, which stores possible choices and, when
  * close, result of the single election.
  *
- * Immutable when closed.
+ * Some of the {@link Choice}s of the VotingPaper may generate a secondary
+ * selection among suboptions. These suboptions reside in another VotingPaper
+ * which is mapped to the generating choice via the {@link Map} given in the
+ * constructor. The users of this class may then retrieve the
+ * {@link VotingPaper} linked to a choice via the method {@code getSubPaper}
+ * when the elector chooses the generating choice. Choices that do not generate
+ * a subpaper are mapped to null in both the constructor and as the returned
+ * value of getSubPaper.
+ *
+ * Immutable when closed. Specifically, the state of mutability of an open
+ * {@code VotingPaper} resides in its votes, as the {@link Choice}s,
+ * {@link ElectionMethod} and {@link VoteDecider} cannot mute. The method
+ * {@code copy} returns a copy of this VotingPaper with the mutable state
+ * removed.
  *
  * TODO: result caching system
  */
 public class VotingPaper implements Iterable<Choice> {
-	private final List<Choice> choices; // TODO: better use a map?
+	private final Map<Choice, VotingPaper> choices; // the keys are the available choices, the values are the optional suboptions
+							// papers
 	private final List<Vote> votes = new LinkedList<>();
 	private boolean isRunning = true;
 	private final ElectionMethod method;
@@ -27,14 +44,17 @@ public class VotingPaper implements Iterable<Choice> {
 	 * Constructs a new {@link VotingPaper} with the given parameters.
 	 * 
 	 * @param choices
-	 *                choices for the election represented by this paper.
+	 *                choices for the election represented by this paper. In case of
+	 *                choices with suboptions, these must be mapped to a
+	 *                {@link VotingPaper} containing said suboptions through this
+	 *                map, else the choice must be mapped to {@code null}.
 	 * @param method
 	 *                the method used by the election of this paper.
 	 * @param decider
 	 *                decides if a person can vote for this VotingPaper.
 	 */
-	public VotingPaper(List<Choice> choices, ElectionMethod method, VoteDecider decider) {
-		this.choices = List.copyOf(choices);
+	public VotingPaper(Map<Choice, VotingPaper> choices, ElectionMethod method, VoteDecider decider) {
+		this.choices = copyChoiceMap(choices);
 		this.method = method;
 		this.decider = decider;
 	}
@@ -81,6 +101,20 @@ public class VotingPaper implements Iterable<Choice> {
 	}
 
 	/**
+	 * Returns the {@link VotingPaper} for the suboptions of the given
+	 * {@link Choice}, or null if the choice doesn't include any. This is the
+	 * correct way to retrieve the {@code VotingPaper}s for the suboptions of the
+	 * single {@code Choice}s in order to then modify them, as they are not copies.
+	 *
+	 * @param c
+	 *                the choice to query the subpaper of.
+	 * @return the {@link VotingPaper} for the suboptions of the given choice.
+	 */
+	public VotingPaper getSubPaper(Choice c) {
+		return choices.get(c);
+	}
+
+	/**
 	 * Adds the given {@link Vote} to the election of this {@link VotingPaper}.
 	 * 
 	 * @param v
@@ -101,7 +135,7 @@ public class VotingPaper implements Iterable<Choice> {
 	 */
 	public Results getResults() {
 		SortedSet<Results.Result> res = new TreeSet<>(); // TODO: TreeSet comparator for Result
-		for (Choice c : choices) {
+		for (Choice c : choices.keySet()) {
 			long score = 0;
 			for (Vote v : votes) {
 				score += v.getValue(c);
@@ -198,12 +232,29 @@ public class VotingPaper implements Iterable<Choice> {
 	 *         original (votes, running state).
 	 */
 	public VotingPaper copy() {
-		return new VotingPaper(List.copyOf(choices), method, decider);
+		return new VotingPaper(copyChoiceMap(choices), method, decider);
+	}
+
+	/**
+	 * Returns a {@link Set} containing the {@link Choice}s for this
+	 * {@link VotingPaper}.
+	 *
+	 * @return set of choices.
+	 */
+	public Set<Choice> getChoices() {
+		return choices.keySet();
 	}
 
 	@Override
 	public Iterator<Choice> iterator() {
-		return choices.iterator();
+		return getChoices().iterator();
+	}
+
+	private static Map<Choice, VotingPaper> copyChoiceMap(Map<Choice, VotingPaper> choices) {
+		Map<Choice, VotingPaper> res = new HashMap<>(choices.size());
+		for (Map.Entry<Choice, VotingPaper> e : choices.entrySet())
+			res.put(e.getKey(), e.getValue() == null ? null : e.getValue().copy());
+		return res;
 	}
 
 }

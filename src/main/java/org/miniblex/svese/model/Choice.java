@@ -3,8 +3,7 @@ package org.miniblex.svese.model;
 /**
  * Representation of a possible choice in an election.
  *
- * Immutable, with the exception of the {@link VotingPaper} made by the
- * suboptions in case of a composite choice (see isComposite).
+ * Immutable.
  */
 public class Choice {
 	private final String name;
@@ -27,19 +26,6 @@ public class Choice {
 	 */
 	public String getName() {
 		return name;
-	}
-
-	/**
-	 * Returns {@code true} if this {@link Choice} is composite, {@code false}
-	 * otherwise. If a choice is composite, you can cast it to
-	 * {@link CompositeChoice} and use the method getSubopts to get the
-	 * {@link VotingPaper} with this {@link Choice}'s suboptions.
-	 * 
-	 * @return {@code true} if this {@link Choice} is composite, {@code false}
-	 *         otherwise.
-	 */
-	public boolean isComposite() {
-		return false;
 	}
 
 	/**
