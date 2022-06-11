@@ -54,7 +54,7 @@ run(){
 	[ -f $DB_DIR/postmaster.pid ] && pg_ctl -D $DB_DIR stop
 	pg_ctl -D $DB_DIR start -o -p$DB_PORT
 	trap "sleep 0" INT
-	mvn spring-boot:run
+	mvn spring-boot:run || true
 	pg_ctl -D $DB_DIR stop
 }
 
