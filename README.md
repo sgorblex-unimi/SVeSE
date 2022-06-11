@@ -20,6 +20,7 @@ An incomprehensive list of TODOs. Also check code TODOs.
 #### Model
 - [ ] voting stations and managers
 - [ ] guarantors
+- [ ] blank votes
 
 #### Interface
 - [ ] work with model

@@ -33,4 +33,9 @@ public class AdultDecider implements VoteDecider {
 		return p.age() >= ageThreshold;
 	}
 
+	@Override
+	public String toString() {
+		return "AdultDecider[ageThreshold=" + ageThreshold + "]";
+	}
+
 }

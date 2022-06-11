@@ -1,6 +1,5 @@
 package org.miniblex.svese.model;
 
-// TODO [?]: possibly delete this class and the relative ElectionMethod since it doesn't really add anything to the hierarchy.
 /**
  * Implementation of {@link Vote} for a referendum. In a referendum, only yes or
  * no is chosen, and the relative score is incremented.

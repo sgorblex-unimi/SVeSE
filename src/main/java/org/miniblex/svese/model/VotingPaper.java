@@ -1,5 +1,6 @@
 package org.miniblex.svese.model;
 
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -30,9 +31,10 @@ import org.apache.commons.lang3.NotImplementedException;
  * {@code copy} returns a copy of this VotingPaper with the mutable state
  * removed.
  *
- * TODO: result caching system
+ * TODO: result caching system (persistent?)
  */
 public class VotingPaper implements Iterable<Choice> {
+	private final String title;
 	private final Map<Choice, VotingPaper> choices; // the keys are the available choices, the values are the optional suboptions
 							// papers
 	private final List<Vote> votes = new LinkedList<>();
@@ -53,10 +55,20 @@ public class VotingPaper implements Iterable<Choice> {
 	 * @param decider
 	 *                decides if a person can vote for this VotingPaper.
 	 */
-	public VotingPaper(Map<Choice, VotingPaper> choices, ElectionMethod method, VoteDecider decider) {
+	public VotingPaper(String title, Map<Choice, VotingPaper> choices, ElectionMethod method, VoteDecider decider) {
+		this.title = title;
 		this.choices = copyChoiceMap(choices);
 		this.method = method;
 		this.decider = decider;
+	}
+
+	/**
+	 * Returns the title of this {@link VotingPaper}.
+	 *
+	 * @return the title.
+	 */
+	public String getTitle() {
+		return title;
 	}
 
 	/**
@@ -134,33 +146,38 @@ public class VotingPaper implements Iterable<Choice> {
 	 * @return the results.
 	 */
 	public Results getResults() {
-		SortedSet<Results.Result> res = new TreeSet<>(); // TODO: TreeSet comparator for Result
-		for (Choice c : choices.keySet()) {
-			long score = 0;
-			for (Vote v : votes) {
-				score += v.getValue(c);
-			}
-			res.add(new Results.Result(c, score));
-		}
-		long totalVotes = votes.size();
-		double turnout = 42; // TODO: method to establish how many were eligible for voting
-		return new Results(res, totalVotes, turnout);
+		return new Results();
 	}
 
 	/**
 	 * Represents this paper's election results.
 	 *
 	 * Immutable.
+	 *
+	 * Results' iterator iterates in descending order of score.
 	 */
-	public class Results {
+	public class Results implements Iterable<Results.Result> {
 		private final SortedSet<Result> allResults;
 		private final long totalVotes;
 		private final double turnout; // turnout in [0,1]
 
-		private Results(SortedSet<Result> allResults, long totalVotes, double turnout) {
-			this.allResults = allResults;
-			this.totalVotes = totalVotes;
-			this.turnout = turnout;
+		private Results() {
+			SortedSet<Result> res = new TreeSet<>(new Comparator<Result>() {
+				@Override
+				public int compare(Result res1, Result res2) {
+					return Math.toIntExact(res1.score - res2.score);
+				}
+			});
+			for (Choice c : choices.keySet()) {
+				long score = 0;
+				for (Vote v : votes) {
+					score += v.getValue(c);
+				}
+				res.add(new Result(c, score));
+			}
+			this.totalVotes = votes.size();
+			this.turnout = 42; // TODO: method to establish how many were eligible for voting (see Session)
+			this.allResults = res;
 		}
 
 		/**
@@ -190,9 +207,15 @@ public class VotingPaper implements Iterable<Choice> {
 		 * @param c
 		 *                the choice.
 		 * @return the score for the choice.
+		 * @throws IllegalArgumentException
+		 *                 if the given choice was not part of the paper.
 		 */
-		public long getScore(Choice c) {
-			throw new NotImplementedException();
+		public long getScore(Choice c) throws IllegalArgumentException {
+			for (Result r : allResults) {
+				if (r.getChoice().equals(c))
+					return r.getScore();
+			}
+			throw new IllegalArgumentException("the given choice was not present in this paper");
 		}
 
 		/**
@@ -204,7 +227,16 @@ public class VotingPaper implements Iterable<Choice> {
 		 * @return the relative score for the {@link Choice}.
 		 */
 		public double getRelativeScore(Choice c) {
-			throw new NotImplementedException();
+			for (Result r : allResults) {
+				if (r.getChoice().equals(c))
+					return r.getRelativeScore();
+			}
+			throw new IllegalArgumentException("the given choice was not present in this paper");
+		}
+
+		@Override
+		public Iterator<Result> iterator() {
+			return allResults.iterator();
 		}
 
 		/**
@@ -212,7 +244,7 @@ public class VotingPaper implements Iterable<Choice> {
 		 *
 		 * Immutable.
 		 */
-		private static class Result {
+		public class Result {
 			private final Choice c;
 			private final long score;
 
@@ -220,6 +252,35 @@ public class VotingPaper implements Iterable<Choice> {
 				this.c = c;
 				this.score = score;
 			}
+
+			/**
+			 * Return this Result's {@link Choice}.
+			 *
+			 * @return the choice.
+			 */
+			public Choice getChoice() {
+				return c;
+			}
+
+			/**
+			 * Return this Result's score.
+			 *
+			 * @return the score.
+			 */
+			public long getScore() {
+				return score;
+			}
+
+			/**
+			 * Return this Result's relative score as a double between 0 and 1.
+			 *
+			 *
+			 * @return the relative score.
+			 */
+			public long getRelativeScore() {
+				return score / totalVotes;
+			}
+
 		}
 
 	}
@@ -232,7 +293,7 @@ public class VotingPaper implements Iterable<Choice> {
 	 *         original (votes, running state).
 	 */
 	public VotingPaper copy() {
-		return new VotingPaper(copyChoiceMap(choices), method, decider);
+		return new VotingPaper(title, copyChoiceMap(choices), method, decider);
 	}
 
 	/**
@@ -255,6 +316,24 @@ public class VotingPaper implements Iterable<Choice> {
 		for (Map.Entry<Choice, VotingPaper> e : choices.entrySet())
 			res.put(e.getKey(), e.getValue() == null ? null : e.getValue().copy());
 		return res;
+	}
+
+	private String choicesToString() {
+		String res = "[\n";
+		for (Map.Entry<Choice, VotingPaper> e : choices.entrySet()) {
+			res += e.getKey();
+			VotingPaper sub = e.getValue();
+			if (sub != null)
+				res += " --> " + sub;
+			res += "\n";
+		}
+		return res.trim() + "]";
+	}
+
+	// TODO: add number of registered votes
+	@Override
+	public String toString() {
+		return "VotingPaper[title=\"" + title + "\", method=" + method + ", isRunning=" + isRunning + ", decider=" + decider + ", choices=" + choicesToString() + "]";
 	}
 
 }

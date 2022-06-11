@@ -11,6 +11,8 @@ import java.util.Map;
  * handle only one voting session at a time, therefore a (slightly modified)
  * singleton pattern is used.
  */
+// TODO: have a method (possibly a JPA repository) to calculate turnout and keep
+// track of people who have voted.
 public class Session {
 	private static Session instance = null; // singleton implementation pointer
 
@@ -18,7 +20,7 @@ public class Session {
 
 	// session state
 	private boolean isRunning = false;
-	private final Map<Guarantor, Boolean> approval = new HashMap<>(); // stores guarantors and their approval of session parameters
+	private final Map<Guarantor, Boolean> approval; // stores guarantors and their approval of session parameters
 	// TODO: timer field which starts at session start
 
 	/**
@@ -28,23 +30,20 @@ public class Session {
 	 * @param params
 	 *                the session's parameters.
 	 */
-	private Session(SessionParameters params) {
+	private Session(SessionParameters params, List<Guarantor> guarantors) {
 		this.params = params.copy();
-		// TODO: complete implementation (add negative approval for all guarantors in
-		// the list)
+		this.approval = new HashMap<>(guarantors.size());
+		for (Guarantor g : guarantors)
+			approval.put(g, false);
 	}
 
 	/**
 	 * Returns the only existing Session instance.
 	 *
-	 * @return The current initialized session.
-	 * @throws SessionNotCreatedException
-	 *                 when the session has not yet been created.
+	 * @return The current session, or null if the session has not been initialized
+	 *         yet.
 	 */
-	public static Session getSession() throws SessionNotCreatedException {
-		if (instance == null) {
-			throw new SessionNotCreatedException();
-		}
+	public static Session getSession() {
 		return instance;
 	}
 
@@ -57,37 +56,19 @@ public class Session {
 	 * @throws SessionRunningException
 	 *                 if you try to initialize the session while it's running.
 	 */
-	public static void initializeSession(SessionParameters params) throws SessionRunningException {
+	public static void initializeSession(SessionParameters params, List<Guarantor> guarantors) throws SessionRunningException {
 		if (instance != null && instance.isRunning())
 			throw new SessionRunningException();
-		instance = new Session(params);
+		instance = new Session(params, guarantors);
 	}
 
 	/**
 	 * Returns a copy of the current Session parameters.
-	 * 
+	 *
 	 * @return current session parameters. Modification safe.
 	 */
 	public SessionParameters getCurrentParameters() {
 		return params.copy();
-	}
-
-	/**
-	 * Modifies this {@link Session}'s parameters according to the given ones,
-	 * voiding any guarantors' approval.
-	 * 
-	 * @param params
-	 *                the new session parameters. Likely, a modified version of the
-	 *                one returned by {@code getCurrentParameters}. Modification
-	 *                safe.
-	 * @throws SessionRunningException
-	 *                 If it is made an attempt to modify the session while it's
-	 *                 running.
-	 */
-	public void editParameters(SessionParameters params) throws SessionRunningException {
-		if (this.isRunning())
-			throw new SessionRunningException();
-		this.params = params.copy();
 	}
 
 	/**
@@ -123,27 +104,85 @@ public class Session {
 	 * until it is assigned to a {@link Session}, which uses an immutable copy of
 	 * it.
 	 */
-	public class SessionParameters implements Cloneable {
+	public static class SessionParameters {
 		private LocalDateTime start; // Start time of the voting session
 		private LocalDateTime end; // End time of the voting session
 		private final List<VotingPaper> papers; // Voting papers
-		// TODO: other parameters
 
-		// TODO: appropriate constructor
+		/**
+		 * Constructs a new, blank {@link SessionParameters}.
+		 */
 		public SessionParameters() {
 			papers = new ArrayList<>();
 		}
 
 		/**
-		 * Used by clone
+		 * Sets this {@link SessionParameters}' start time to {@code start}.
+		 *
+		 * @param start
+		 *                the new start time.
+		 */
+		public void setStart(LocalDateTime start) {
+			this.start = start;
+		}
+
+		/**
+		 * Sets this {@link SessionParameters}' end time to {@code end}.
+		 *
+		 * @param end
+		 *                the new end time.
+		 */
+		public void setEnd(LocalDateTime end) {
+			this.end = end;
+		}
+
+		/**
+		 * Returns this {@link SessionParameters}' start time.
+		 *
+		 * @return the start time.
+		 */
+		public LocalDateTime getStart() {
+			return start;
+		}
+
+		/**
+		 * Returns this {@link SessionParameters}' end time.
+		 *
+		 * @return the end time.
+		 */
+		public LocalDateTime getEnd() {
+			return end;
+		}
+
+		/**
+		 * Adds the given {@link VotingPaper} to this {@link SessionParameters}' papers.
+		 *
+		 * @param p
+		 *                a {@link VotingPaper}.
+		 */
+		public void addPaper(VotingPaper p) {
+			papers.add(p.copy());
+		}
+
+		/**
+		 * Returns the list of {@link VotingPaper} of the {@link Session} described by
+		 * this {@link SessionParameters}.
+		 * 
+		 * @return list of papers of the session. May be modified to add or remove
+		 *         {@link VotingPaper}s.
+		 */
+		public List<VotingPaper> getPaperList() {
+			return papers;
+		}
+
+		/**
+		 * Used by copy
 		 */
 		private SessionParameters(LocalDateTime start, LocalDateTime end, List<VotingPaper> papers) {
 			this.start = start;
 			this.end = end;
 			this.papers = papers;
 		}
-
-		// TODO: getters, setters
 
 		/**
 		 * Returns a copy of this {@link SessionParameters}. Any parameter with state
@@ -159,15 +198,35 @@ public class Session {
 			return new SessionParameters(start, end, papers);
 		}
 
-		/**
-		 * Returns the list of {@link VotingPaper} of the {@link Session} described by
-		 * this {@link SessionParameters}.
-		 * 
-		 * @return list of papers of the session. May be modified to add or remove
-		 *         {@link VotingPaper}s.
-		 */
-		public List<VotingPaper> getPaperList() {
-			return papers;
+		private String papersToString() {
+			String res = "";
+			for (VotingPaper p : papers) {
+				res += p + "\n";
+			}
+			return res.trim();
 		}
+
+		@Override
+		public String toString() {
+			String res = "[";
+			res += "start=" + start + ", ";
+			res += "end=" + end + ", ";
+			res += "papers=\n" + papersToString();
+			return res + "]";
+		}
+
 	}
+
+	private String approvalToString() {
+		String res = "[\n";
+		for (Map.Entry<Guarantor, Boolean> e : approval.entrySet())
+			res += e.getKey() + ": " + e.getValue() + "\n";
+		return res.trim() + "]";
+	}
+
+	@Override
+	public String toString() {
+		return "Session[isRunning=" + isRunning + ", approval=" + approvalToString() + ",\nparams=" + params + "]";
+	}
+
 }
