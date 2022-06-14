@@ -9,11 +9,23 @@ In general, follow the style of the already present code. Some details worth poi
 
 
 ## TODO
-An uncomprensive list of TODOs. Also check code TODOs.
+An incomprehensive list of TODOs. Also check code TODOs.
 
 ### Java
 - [ ] use sets instead of lists when appropriate
 - [ ] actual implementations
+- [ ] persistence
+- [ ] login role mechanism
+
+#### Model
+- [ ] voting stations and managers
+- [ ] guarantors
+
+#### Interface
+- [ ] work with model
 
 ### Shell script
 - [ ] try to avoid using sudo (move postgresql lock file?)
+
+### Other
+- [ ] Dockerfile
