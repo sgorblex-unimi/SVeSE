@@ -59,6 +59,8 @@ An incomprehensive list of TODOs. Also check code TODOs.
 - [ ] Add constraint on method, sub boting paper and number of choice (Preferenced and referendum)
 - [x] improve subvoting paper creation dialog (remove esc to quit and fix grid refresh)
 - [ ] Create view to add more than one voting paper to a session
+- [ ] Adding confirm dialog to VoteView
+- [ ] Add OrdinalVoting to sub paper in Preferenced Voting
 
 
 #### Model
