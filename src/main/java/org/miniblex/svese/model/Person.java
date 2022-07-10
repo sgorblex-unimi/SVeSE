@@ -1,42 +1,28 @@
 package org.miniblex.svese.model;
 
 import java.time.LocalDate;
+import java.time.Period;
 
-import org.apache.commons.lang3.NotImplementedException;
+import javax.persistence.Entity;
+import javax.persistence.Id;
 
 /**
  * Representation of a real person, possibly an elector.
  *
  * Immutable.
  */
+@Entity
 public class Person {
-	private final String fname;
-	private final String lname;
-	private final char[] ssn; // TODO: substitute with a custom class (?)
-	private final LocalDate birthDate;
-	private final String birthPlace;
+	@Id
+	private String ssn;
 
-	/**
-	 * Constructs a new {@link Person} with the given information.
-	 * 
-	 * @param fname
-	 *                   first name.
-	 * @param lname
-	 *                   last name.
-	 * @param ssn
-	 *                   social security number.
-	 * @param birthDate
-	 *                   birth date.
-	 * @param birthPlace
-	 *                   birth place.
-	 */
-	public Person(String fname, String lname, char[] ssn, LocalDate birthDate, String birthPlace) {
-		this.fname = fname;
-		this.lname = lname;
-		this.ssn = ssn;
-		this.birthDate = birthDate;
-		this.birthPlace = birthPlace;
-	}
+	private String firstName;
+	private String lastName;
+	private LocalDate birthDate;
+	private String birthPlace;
+
+	private boolean enabled;
+	private String pwHash;
 
 	/**
 	 * Returns this {@link Person}'s age.
@@ -44,7 +30,7 @@ public class Person {
 	 * @return the age.
 	 */
 	public int age() {
-		throw new NotImplementedException();
+		return Period.between(birthDate, LocalDate.now()).getYears();
 	}
 
 	/**
@@ -52,8 +38,8 @@ public class Person {
 	 * 
 	 * @return first name.
 	 */
-	public String getFname() {
-		return fname;
+	public String getFirstName() {
+		return firstName;
 	}
 
 	/**
@@ -61,8 +47,8 @@ public class Person {
 	 * 
 	 * @return last name.
 	 */
-	public String getLname() {
-		return lname;
+	public String getLastName() {
+		return lastName;
 	}
 
 	/**
@@ -70,7 +56,7 @@ public class Person {
 	 * 
 	 * @return social security number.
 	 */
-	public char[] getSsn() {
+	public String getSsn() {
 		return ssn;
 	}
 
@@ -90,6 +76,42 @@ public class Person {
 	 */
 	public String getBirthPlace() {
 		return birthPlace;
+	}
+
+	/**
+	 * Returns true if the SVeSE user linked to this Person is enabled, false
+	 * otherwise.
+	 *
+	 * @return true if this Person is enabled, false otherwise.
+	 */
+	public boolean isEnabled() {
+		return enabled;
+	}
+
+	/**
+	 * Returns the password hash of the SVeSE user linked to this Person.
+	 *
+	 * @return the password hash for this person.
+	 */
+	public String getPwHash() {
+		return pwHash;
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((ssn == null) ? 0 : ssn.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (!(obj instanceof Person))
+			return false;
+		return ssn.equals(((Person) obj).ssn);
 	}
 
 }

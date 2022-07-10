@@ -2,6 +2,7 @@ package org.miniblex.svese.model;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -20,8 +21,7 @@ public class Session {
 
 	// session state
 	private boolean isRunning = false;
-	private final Map<Guarantor, Boolean> approval; // stores guarantors and their approval of session parameters
-	// TODO: timer field which starts at session start
+	private final Map<Person, Boolean> approval; // stores guarantors and their approval of session parameters
 
 	/**
 	 * Creates a new voting session. Should only be called by
@@ -30,10 +30,10 @@ public class Session {
 	 * @param params
 	 *                the session's parameters.
 	 */
-	private Session(SessionParameters params, List<Guarantor> guarantors) {
+	private Session(SessionParameters params, List<Person> guarantors) {
 		this.params = params.copy();
 		this.approval = new HashMap<>(guarantors.size());
-		for (Guarantor g : guarantors)
+		for (Person g : guarantors)
 			approval.put(g, false);
 	}
 
@@ -56,7 +56,7 @@ public class Session {
 	 * @throws SessionRunningException
 	 *                 if you try to initialize the session while it's running.
 	 */
-	public static void initializeSession(SessionParameters params, List<Guarantor> guarantors) throws SessionRunningException {
+	public static void initializeSession(SessionParameters params, List<Person> guarantors) throws SessionRunningException {
 		if (instance != null && instance.isRunning())
 			throw new SessionRunningException();
 		instance = new Session(params, guarantors);
@@ -89,12 +89,29 @@ public class Session {
 	 *         otherwise
 	 */
 	public boolean checkApproval() {
-		for (Map.Entry<Guarantor, Boolean> a : approval.entrySet()) {
+		for (Map.Entry<Person, Boolean> a : approval.entrySet()) {
 			if (a.getValue() == false) {
 				return false;
 			}
 		}
 		return true;
+	}
+
+	/**
+	 * Returns a {@link Collection} containing the roles of the given {@link Person}
+	 * for the current Session.
+	 *
+	 * @param p
+	 *                the person to inspect.
+	 * @return the person's roles.
+	 */
+	public static Collection<Role> getRoles(Person p) {
+		Collection<Role> res = new ArrayList<>();
+		if (instance != null) {
+			if (instance.approval.containsKey(p))
+				res.add(Role.GUARANTOR);
+		}
+		return res;
 	}
 
 	/**
@@ -219,7 +236,7 @@ public class Session {
 
 	private String approvalToString() {
 		String res = "[\n";
-		for (Map.Entry<Guarantor, Boolean> e : approval.entrySet())
+		for (Map.Entry<Person, Boolean> e : approval.entrySet())
 			res += e.getKey() + ": " + e.getValue() + "\n";
 		return res.trim() + "]";
 	}

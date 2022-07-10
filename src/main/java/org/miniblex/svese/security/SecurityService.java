@@ -1,8 +1,13 @@
 package org.miniblex.svese.security;
 
+import java.util.Optional;
+
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.server.VaadinServletRequest;
 
+import org.miniblex.svese.model.Person;
+import org.miniblex.svese.model.PersonRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -13,7 +18,10 @@ import org.springframework.stereotype.Component;
 public class SecurityService {
 	private static final String LOGOUT_SUCCESS_URL = "/login";
 
-	public UserDetails getAuthenticatedUser() {
+	/**
+	 * Returns Spring Security authenticated user.
+	 */
+	private UserDetails getAuthenticatedUser() {
 		SecurityContext context = SecurityContextHolder.getContext();
 		Object principal = context.getAuthentication().getPrincipal();
 		if (principal instanceof UserDetails) {
@@ -23,6 +31,27 @@ public class SecurityService {
 		return null;
 	}
 
+	@Autowired
+	private PersonRepository repo;
+
+	/**
+	 * Returns the current authenticated {@link Person}.
+	 *
+	 * @return the logged {@link Person}.
+	 */
+	public Person getAuthenticatedPerson() {
+		UserDetails user = getAuthenticatedUser();
+		if (user == null)
+			return null;
+		Optional<Person> person = repo.findById(user.getUsername());
+		if (person.isEmpty())
+			throw new AssertionError("the logged user is not a valid person!?");
+		return person.get();
+	}
+
+	/**
+	 * Logs the current user out.
+	 */
 	public void logout() {
 		UI.getCurrent().getPage().setLocation(LOGOUT_SUCCESS_URL);
 		SecurityContextLogoutHandler logoutHandler = new SecurityContextLogoutHandler();

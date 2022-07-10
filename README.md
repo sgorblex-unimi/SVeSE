@@ -13,13 +13,13 @@ An incomprehensive list of TODOs. Also check code TODOs.
 
 ### Java
 - [ ] use sets instead of lists when appropriate
-- [ ] actual implementations
+- [x] actual implementations
 - [ ] persistence
-- [ ] login role mechanism
+- [x] login role mechanism
 
 #### Model
 - [ ] voting stations and managers
-- [ ] guarantors
+- [x] guarantors
 - [ ] blank votes
 
 #### Interface
