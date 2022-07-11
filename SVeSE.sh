@@ -2,8 +2,15 @@
 
 set -e
 
+DB_USER=svese
+DB_PW="svese"
+DB_NAME=svese
+DB_PORT=65432
+
 BASE=$(readlink -f "${0%/*}")
-DB_DIR=$BASE/database
+DB_DIR="$BASE/database"
+
+
 
 USAGE="SVeSE: Sistema di Voto e Scrutinio Elettronico by Miniblex corp.
 
@@ -12,51 +19,98 @@ $0 VERB
 
 Where VERB is one of:
 build-db	(re)creates PostgreSQL database
-run		runs the system"
+run		runs the system
+run-sql	FILE	runs SQL from the given file in the PostgreSQL database
+start-db	starts PostgreSQL database (debug purposes)
+stop-db		stops PostgreSQL database (debug purposes)"
 
-# TODO: very temporary and not secure
-DB_INIT_SQL="CREATE ROLE svese WITH login ENCRYPTED PASSWORD 'svese';
-CREATE DATABASE svese WITH OWNER svese;"
-DB_PORT=65432												# TODO: check port
+DB_INIT_SQL="CREATE ROLE $DB_PW WITH login ENCRYPTED PASSWORD '$DB_PW';
+CREATE DATABASE $DB_NAME WITH OWNER $DB_USER;"
 
 
-builddb(){
-	if ! command -v pg_ctl >/dev/null; then
-		printf "PostgreSQL not detected (pg_ctl command not found in your PATH). Please install PostgreSQL and try again.\n" >&2
+# $1: command
+# $2: program name (can omit if equals to $1)
+checkSw(){
+	name="${2:-$1}"
+	if ! command -v "$1" >/dev/null; then
+		printf "%s not detected (%s command not found in your PATH). Please install %s and try again.\n" "$name" "$1" "$name" >&2
 		return 1
 	fi
-	[ ! -d /run/postgresql ] && sudo mkdir /run/postgresql && sudo chown $USER /run/postgresql	# TODO: ugly
-	[ -f $DB_DIR/postmaster.pid ] && pg_ctl -D $DB_DIR stop
-	rm -rf $DB_DIR											# TODO: unsafe
-	pg_ctl -D $DB_DIR init
-	pg_ctl -D $DB_DIR start -o -p$DB_PORT
+}
+
+checkSw pg_ctl PostgreSQL
+checkSw mvn Maven
+[ ! -d /run/postgresql ] && sudo mkdir /run/postgresql && sudo chown $USER /run/postgresql
+
+
+checkdbexists(){
+	if [ ! -d $DB_DIR ]; then
+		printf "Database directory not found. Run $0 build-db first.\n" >&2
+		return 1
+	fi
+}
+
+dbrunning(){
+	[ -f "$DB_DIR/postmaster.pid" ]
+}
+
+db(){
+	prefix="pg_ctl -D \"$DB_DIR\""
+	[ "$1" = start ] && eval $prefix -o -p"$DB_PORT" $@ || eval $prefix $@
+}
+
+builddb(){
+	if dbrunning; then
+		db stop
+	fi
+	rm -rf $DB_DIR
+	db init
+	db start
 	printf "%s\n" "$DB_INIT_SQL" | psql -p $DB_PORT postgres
-	pg_ctl -D $DB_DIR stop
+	db stop
 }
 
 run(){
-	if ! command -v mvn >/dev/null; then
-		printf "Maven not detected (mvn command not found in your PATH). Please install Maven and try again.\n" >&2
-		return 1
+	checkdbexists
+	if dbrunning; then
+		db stop
 	fi
-	if ! command -v pg_ctl >/dev/null; then
-		printf "PostgreSQL not detected (pg_ctl command not found in your PATH). Please install PostgreSQL and try again.\n" >&2
-		return 1
-	fi
-	if [ ! -d $DB_DIR ]; then
-		printf "Database directory not found. Run $0 build-db first.\n" >&2
-		return 1;
-	fi
-	if [ -f $DB_DIR/postmaster.pid ]; then
-		pg_ctl -D $DB_DIR stop
-	fi
-	[ ! -d /run/postgresql ] && sudo mkdir /run/postgresql && sudo chown $USER /run/postgresql	# TODO: ugly
-	[ -f $DB_DIR/postmaster.pid ] && pg_ctl -D $DB_DIR stop
-	pg_ctl -D $DB_DIR start -o -p$DB_PORT
+	db start
 	trap "sleep 0" INT
-	mvn spring-boot:run || true
-	pg_ctl -D $DB_DIR stop
+	! mvn spring-boot:run
+	db stop
 }
+
+startdb(){
+	checkdbexists
+	if dbrunning; then
+		printf "%s\n" "Already running."
+		return 0
+	fi
+	db start
+}
+
+stopdb(){
+	checkdbexists
+	if ! dbrunning; then
+		printf "%s\n" "Not running."
+		return 0
+	fi
+	db stop
+}
+
+runsql(){
+	checkdbexists
+	dbrunning && wasrunning=true
+	if [ -z $wasrunning ]; then
+		db start
+	fi
+	cat "$1" | psql -p $DB_PORT -U $DB_USER "$DB_NAME"
+	if [ -z $wasrunning ]; then
+		db stop
+	fi
+}
+
 
 if [ -z $1 ]; then
 	printf "$USAGE\n" >&2
@@ -64,7 +118,9 @@ if [ -z $1 ]; then
 fi
 
 if [ $# -gt 2 ]; then
-	printf "ERROR: Provide only one argument.\n" >&2
+	if [ "$1" != run-sql ] || [ $# -ne 3 ]; then
+		printf "ERROR: Provide only one argument.\n" >&2
+	fi
 fi
 
 case "$1" in
@@ -76,6 +132,15 @@ case "$1" in
 		;;
 	run)
 		run
+		;;
+	run-sql)
+		runsql "$2"
+		;;
+	start-db)
+		startdb
+		;;
+	stop-db)
+		stopdb
 		;;
 	*)
 		printf "ERROR: Unknown verb.\n" >&2
