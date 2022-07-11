@@ -26,6 +26,13 @@ For example, to import the given `example_data.sql` first run the system once:
 Of course, you can pick any method of your choice to populate the database.
 
 
+### Session administrator
+You need to set the session administrator to a valid person in the database. To do that, just create a file called `admin.txt` in the system directory which contains the administrator's SSN:
+```sh
+echo "DAD52" > admin.txt
+```
+
+
 
 ## Code etiquette
 In general, follow the style of the already present code. Some details worth pointing out are:

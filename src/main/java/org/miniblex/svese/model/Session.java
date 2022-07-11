@@ -16,6 +16,7 @@ import java.util.Map;
 // track of people who have voted.
 public class Session {
 	private static Session instance = null; // singleton implementation pointer
+	private static Person admin;
 
 	private SessionParameters params; // all session parameters
 
@@ -107,11 +108,25 @@ public class Session {
 	 */
 	public static Collection<Role> getRoles(Person p) {
 		Collection<Role> res = new ArrayList<>();
+		if (p.equals(admin))
+			res.add(Role.ADMIN);
 		if (instance != null) {
 			if (instance.approval.containsKey(p))
 				res.add(Role.GUARANTOR);
 		}
 		return res;
+	}
+
+	/**
+	 * Sets the session administrator to the given {@link Person}.
+	 *
+	 * @param administrator
+	 *                the admin.
+	 */
+	public static void setAdmin(Person administrator) {
+		if (getSession() != null)
+			throw new IllegalStateException("cannot change admin once the session is initialized");
+		admin = administrator;
 	}
 
 	/**

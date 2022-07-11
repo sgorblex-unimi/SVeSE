@@ -11,5 +11,7 @@
 /webpack.config.js
 /webpack.generated.js
 /database
+/admin.txt
 local.vimrc
 Session.vim
+.envrc
