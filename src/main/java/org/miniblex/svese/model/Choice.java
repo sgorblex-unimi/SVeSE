@@ -1,5 +1,7 @@
 package org.miniblex.svese.model;
 
+import java.util.Objects;
+
 /**
  * Representation of a possible choice in an election.
  *
@@ -14,9 +16,11 @@ public class Choice {
 	 * 
 	 * @param name
 	 *                the name.
+	 * @throws NullPointerException
+	 *                 if name is {@code null}.
 	 */
 	public Choice(String name) {
-		this.name = name;
+		this.name = Objects.requireNonNull(name);
 	}
 
 	/**
@@ -26,6 +30,14 @@ public class Choice {
 	 */
 	public String getName() {
 		return name;
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((name == null) ? 0 : name.hashCode());
+		return result;
 	}
 
 	/**

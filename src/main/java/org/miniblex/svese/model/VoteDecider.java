@@ -9,11 +9,12 @@ package org.miniblex.svese.model;
 public interface VoteDecider {
 	/**
 	 * Decides if the given {@link Person} can vote in the {@link VotingPaper} this
-	 * {@link VoteDecider} belongs to.
+	 * {@link VoteDecider} belongs to. Returns false if the given Person is
+	 * {@code null}.
 	 * 
 	 * @param p
 	 *                the person which may be able to vote.
-	 * @return {@code true} if the person can vote, {@code false} otherwise
+	 * @return {@code true} if the person can vote, {@code false} otherwise.
 	 */
 	boolean canVote(Person p);
 }

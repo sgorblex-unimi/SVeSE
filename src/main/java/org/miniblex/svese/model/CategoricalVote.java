@@ -1,5 +1,7 @@
 package org.miniblex.svese.model;
 
+import java.util.Objects;
+
 /**
  * Implementation of {@link Vote} for a categorical election. In a categorical
  * election, only one choice is chosen, which means (only) its score is
@@ -17,7 +19,7 @@ public class CategoricalVote implements Vote {
 	 *                the selected choice.
 	 */
 	public CategoricalVote(Choice chosen) {
-		this.chosen = chosen;
+		this.chosen = Objects.requireNonNull(chosen);
 	}
 
 	/**
@@ -25,7 +27,7 @@ public class CategoricalVote implements Vote {
 	 */
 	@Override
 	public int getValue(Choice c) {
-		return c.equals(this.chosen) ? 1 : 0;
+		return this.chosen.equals(c) ? 1 : 0;
 	}
 
 	@Override

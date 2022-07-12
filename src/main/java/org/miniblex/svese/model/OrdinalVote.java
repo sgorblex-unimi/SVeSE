@@ -1,6 +1,9 @@
 package org.miniblex.svese.model;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 
 /**
  * Implementation of {@link Vote} for an election with ordinal vote. In an
@@ -15,13 +18,22 @@ public class OrdinalVote implements Vote {
 	private List<Choice> order;
 
 	/**
-	 * Constructs a new OrdinalVote from the given ordered list of Choices.
+	 * Constructs a new OrdinalVote from the given ordered list of {@link Choice}s.
 	 * 
 	 * @param order
 	 *                ordered list of choices for this vote, from most to least
 	 *                valuable.
+	 * @throws NullPointerException
+	 *                 if either {@code order} is {@code null} or any of its
+	 *                 elements is.
+	 * @throws IllegalArgumentException
+	 *                 if a Choice occurs twice in {@code order}.
 	 */
 	public OrdinalVote(List<Choice> order) {
+		Set<Choice> checkDups = new HashSet<>();
+		for (Choice c : Objects.requireNonNull(order))
+			if (!checkDups.add(Objects.requireNonNull(c)))
+				throw new IllegalArgumentException("duplicate Choice in list");
 		this.order = order;
 	}
 
@@ -31,7 +43,10 @@ public class OrdinalVote implements Vote {
 	 */
 	@Override
 	public int getValue(Choice c) {
-		return order.size() - order.indexOf(c) - 1;
+		int idx = order.indexOf(c);
+		if (idx < 0)
+			return 0;
+		return order.size() - idx - 1;
 	}
 
 	@Override

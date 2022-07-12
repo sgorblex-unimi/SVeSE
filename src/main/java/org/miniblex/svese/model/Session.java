@@ -6,6 +6,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * Representation of the voting session and its properties. The system can
@@ -27,11 +28,13 @@ public class Session {
 	/**
 	 * Creates a new voting session. Should only be called by
 	 * {@code initializeSession}.
-	 *
-	 * @param params
-	 *                the session's parameters.
 	 */
 	private Session(SessionParameters params, List<Person> guarantors) {
+		Objects.requireNonNull(params);
+		Objects.requireNonNull(guarantors);
+		if (guarantors.size() < 1 || guarantors.contains(admin))
+			throw new IllegalArgumentException("invalid guarantor list");
+		params.checkLegality();
 		this.params = params.copy();
 		this.approval = new HashMap<>(guarantors.size());
 		for (Person g : guarantors)
@@ -55,9 +58,15 @@ public class Session {
 	 * @param params
 	 *                the session's parameters. Modification safe.
 	 * @param guarantors
-	 *                the {@link List} of session guarantors.
+	 *                the {@link List} of session guarantors. The list must contain
+	 *                at least one {@link Person} and must not contain the admin.
 	 * @throws SessionRunningException
 	 *                 if you try to initialize the session while it's running.
+	 * @throws NullPointerException
+	 *                 if {@code guarantors} or {@code params} or any of its
+	 *                 components are {@code null}.
+	 * @throws IllegalArgumentException
+	 *                 if parameters or the guarantor list are invalid.
 	 */
 	public static void initializeSession(SessionParameters params, List<Person> guarantors) throws SessionRunningException {
 		if (instance != null && instance.isRunning())
@@ -110,7 +119,7 @@ public class Session {
 	 */
 	public static Collection<Role> getRoles(Person p) {
 		Collection<Role> res = new ArrayList<>();
-		if (p.equals(admin))
+		if (admin.equals(p))
 			res.add(Role.ADMIN);
 		if (instance != null) {
 			if (instance.approval.containsKey(p))
@@ -124,11 +133,13 @@ public class Session {
 	 *
 	 * @param administrator
 	 *                the admin.
+	 * @throws IllegalStateException
+	 *                 if trying to change admin when the session is initialized.
 	 */
 	public static void setAdmin(Person administrator) {
 		if (getSession() != null)
 			throw new IllegalStateException("cannot change admin once the session is initialized");
-		admin = administrator;
+		admin = Objects.requireNonNull(administrator);
 	}
 
 	/**
@@ -230,6 +241,20 @@ public class Session {
 				papers.add(p.copy());
 			}
 			return new SessionParameters(start, end, papers);
+		}
+
+		/**
+		 * Throws IllegalArgumentException or NullPointerException if the parameters are
+		 * not legal at the current state.
+		 */
+		private void checkLegality() {
+			Objects.requireNonNull(start);
+			Objects.requireNonNull(end);
+			Objects.requireNonNull(papers);
+			for (VotingPaper vp : papers)
+				Objects.requireNonNull(vp);
+			if (end.isBefore(start))
+				throw new IllegalArgumentException("end is after start");
 		}
 
 		private String papersToString() {

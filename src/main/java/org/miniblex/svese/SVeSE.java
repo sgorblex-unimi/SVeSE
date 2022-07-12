@@ -20,9 +20,9 @@ import org.springframework.context.event.EventListener;
 @SpringBootApplication
 public class SVeSE {
 	/** System name. */
-	public static String name = "SVeSE";
+	public static String SYS_NAME = "SVeSE";
 	/** System description. */
-	public static String description = "Sistema di Voto e Scrutinio Elettronico";
+	public static String SYS_DESCRIPTION = "Sistema di Voto e Scrutinio Elettronico";
 
 	private static Path adminFilePath = Path.of("admin.txt");
 

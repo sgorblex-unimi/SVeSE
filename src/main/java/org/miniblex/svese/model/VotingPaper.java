@@ -6,6 +6,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -47,22 +48,26 @@ public class VotingPaper implements Iterable<Choice> {
 	 *                the title of this VotingPaper.
 	 * @param choices
 	 *                choices for the election represented by this paper. In case of
-	 *                choices with suboptions, these must be mapped to a
-	 *                {@link VotingPaper} containing said suboptions through this
-	 *                map, else the choice must be mapped to {@code null}.
+	 *                choices with suboptions (PREFERENCED method), these must be
+	 *                mapped to a {@link VotingPaper} containing said suboptions
+	 *                through this map, else the choice must be mapped to
+	 *                {@code null}.
 	 * @param method
 	 *                the method used by the election of this paper.
 	 * @param decider
-	 *                decides if a person can vote for this VotingPaper.
+	 *                decides if a person can vote for this VotingPaper. Set it to
+	 *                {@code null} if anyone can vote.
+	 * @throws IllegalArgumentException
+	 *                 if trying to add subpapers in a non PREFERENCED paper.
 	 */
 	public VotingPaper(String title, Map<Choice, VotingPaper> choices, ElectionMethod method, VoteDecider decider) {
-		this.title = title;
 		if (method != ElectionMethod.PREFERENCED)
 			for (VotingPaper sub : choices.values())
 				if (sub != null)
 					throw new IllegalArgumentException("cannot add subchoices for an election method different from " + ElectionMethod.PREFERENCED);
-		this.choices = copyChoiceMap(choices);
-		this.method = method;
+		this.title = Objects.requireNonNull(title);
+		this.choices = copyChoiceMap(Objects.requireNonNull(choices));
+		this.method = Objects.requireNonNull(method);
 		this.decider = decider;
 	}
 
@@ -94,7 +99,7 @@ public class VotingPaper implements Iterable<Choice> {
 	 * @return {@code true} if the person can vote, {@code false} otherwise.
 	 */
 	public boolean canVote(Person p) {
-		return decider.canVote(p);
+		return decider == null ? p != null : decider.canVote(p);
 	}
 
 	/**
@@ -144,6 +149,7 @@ public class VotingPaper implements Iterable<Choice> {
 	public void addVote(Vote v) {
 		if (!isRunning())
 			throw new IllegalStateException("cannot add a vote to a closed election");
+		Objects.requireNonNull(v);
 		if (v.getMethod() != this.getMethod())
 			throw new IllegalArgumentException("vote not compatible with the election method of this paper");
 		votes.add(v);
@@ -215,11 +221,12 @@ public class VotingPaper implements Iterable<Choice> {
 		 * 
 		 * @param c
 		 *                the choice.
-		 * @return the score for the choice.
+		 * @return the score for the {@link Choice}.
 		 * @throws IllegalArgumentException
 		 *                 if the given choice was not part of the paper.
 		 */
-		public long getScore(Choice c) throws IllegalArgumentException {
+		public long getScore(Choice c) {
+			Objects.requireNonNull(c);
 			for (Result r : allResults) {
 				if (r.getChoice().equals(c))
 					return r.getScore();
@@ -234,8 +241,11 @@ public class VotingPaper implements Iterable<Choice> {
 		 * @param c
 		 *                the choice.
 		 * @return the relative score for the {@link Choice}.
+		 * @throws IllegalArgumentException
+		 *                 if the given choice was not part of the paper.
 		 */
 		public double getRelativeScore(Choice c) {
+			Objects.requireNonNull(c);
 			for (Result r : allResults) {
 				if (r.getChoice().equals(c))
 					return r.getRelativeScore();
@@ -258,7 +268,7 @@ public class VotingPaper implements Iterable<Choice> {
 			private final long score;
 
 			private Result(Choice c, long score) {
-				this.c = c;
+				this.c = Objects.requireNonNull(c);
 				this.score = score;
 			}
 
@@ -320,10 +330,14 @@ public class VotingPaper implements Iterable<Choice> {
 		return getChoices().iterator();
 	}
 
+	/**
+	 * Creates a copy of the given Choice map. Also checks no Choices are
+	 * {@code null}.
+	 */
 	private static Map<Choice, VotingPaper> copyChoiceMap(Map<Choice, VotingPaper> choices) {
 		Map<Choice, VotingPaper> res = new HashMap<>(choices.size());
 		for (Map.Entry<Choice, VotingPaper> e : choices.entrySet())
-			res.put(e.getKey(), e.getValue() == null ? null : e.getValue().copy());
+			res.put(Objects.requireNonNull(e.getKey()), e.getValue() == null ? null : e.getValue().copy());
 		return res;
 	}
 

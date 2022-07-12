@@ -38,6 +38,7 @@ echo "DAD52" > admin.txt
 In general, follow the style of the already present code. Some details worth pointing out are:
 - use `this.*` only if necessary or for clarity. This may be subject to change
 - period dot after javadoc specifications (`@param`s too)
+- always insert `@throws` clause in javadoc, but insert `throws` in method signature only if particularly meaningful (or in checked exceptions obviously)
 
 
 

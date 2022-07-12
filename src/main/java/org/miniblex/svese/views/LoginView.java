@@ -17,8 +17,8 @@ public class LoginView extends VerticalLayout implements BeforeEnterObserver {
 
 	LoginView() {
 		lo.getElement().getThemeList().add("dark");
-		lo.setTitle(SVeSE.name);
-		lo.setDescription(SVeSE.description);
+		lo.setTitle(SVeSE.SYS_NAME);
+		lo.setDescription(SVeSE.SYS_DESCRIPTION);
 		lo.setForgotPasswordButtonVisible(false);
 		lo.setOpened(true);
 		lo.setAction("login");
