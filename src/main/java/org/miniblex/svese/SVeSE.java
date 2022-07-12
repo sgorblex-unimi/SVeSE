@@ -14,9 +14,14 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
 
+/**
+ * Main class of the SVeSE system and application.
+ */
 @SpringBootApplication
 public class SVeSE {
+	/** System name. */
 	public static String name = "SVeSE";
+	/** System description. */
 	public static String description = "Sistema di Voto e Scrutinio Elettronico";
 
 	private static Path adminFilePath = Path.of("admin.txt");
@@ -40,8 +45,20 @@ public class SVeSE {
 		}
 	}
 
+	/**
+	 * Starts the application.
+	 *
+	 * @param args
+	 *                ignored.
+	 */
 	public static void main(String[] args) {
 		SpringApplication.run(SVeSE.class, args);
+	}
+
+	/**
+	 * Constructs a new SVeSE. Should only be called by Spring.
+	 */
+	SVeSE() {
 	}
 
 }

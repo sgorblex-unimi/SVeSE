@@ -14,6 +14,9 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 import org.springframework.stereotype.Component;
 
+/**
+ * Provides utilities relative to security and web session.
+ */
 @Component
 public class SecurityService {
 	private static final String LOGOUT_SUCCESS_URL = "/login";
@@ -57,4 +60,12 @@ public class SecurityService {
 		SecurityContextLogoutHandler logoutHandler = new SecurityContextLogoutHandler();
 		logoutHandler.logout(VaadinServletRequest.getCurrent().getHttpServletRequest(), null, null);
 	}
+
+	/**
+	 * Constructs a new SecurityService. Should only be called by
+	 * Spring's @Autowired.
+	 */
+	private SecurityService() {
+	}
+
 }

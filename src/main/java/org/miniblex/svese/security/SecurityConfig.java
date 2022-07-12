@@ -11,6 +11,10 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
+/**
+ * Application security configuration. Configures both Vaadin and Spring
+ * Security.
+ */
 @EnableWebSecurity
 @Configuration
 class SecurityConfig extends VaadinWebSecurityConfigurerAdapter {

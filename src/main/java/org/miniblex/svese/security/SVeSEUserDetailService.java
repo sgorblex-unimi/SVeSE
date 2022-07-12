@@ -17,6 +17,10 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
+/**
+ * Implementation of {@link UserDetailsService}: provides information about a
+ * user which is to be logged in.
+ */
 // @Service("userDetailsService")
 // @Transactional
 class SVeSEUserDetailService implements UserDetailsService {

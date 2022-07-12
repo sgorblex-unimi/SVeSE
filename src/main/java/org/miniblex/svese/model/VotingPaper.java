@@ -10,8 +10,6 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-import org.apache.commons.lang3.NotImplementedException;
-
 /**
  * Implementation of a voting paper, which stores possible choices and, when
  * close, result of the single election.
@@ -45,6 +43,8 @@ public class VotingPaper implements Iterable<Choice> {
 	/**
 	 * Constructs a new {@link VotingPaper} with the given parameters.
 	 * 
+	 * @param title
+	 *                the title of this VotingPaper.
 	 * @param choices
 	 *                choices for the election represented by this paper. In case of
 	 *                choices with suboptions, these must be mapped to a
@@ -57,6 +57,10 @@ public class VotingPaper implements Iterable<Choice> {
 	 */
 	public VotingPaper(String title, Map<Choice, VotingPaper> choices, ElectionMethod method, VoteDecider decider) {
 		this.title = title;
+		if (method != ElectionMethod.PREFERENCED)
+			for (VotingPaper sub : choices.values())
+				if (sub != null)
+					throw new IllegalArgumentException("cannot add subchoices for an election method different from " + ElectionMethod.PREFERENCED);
 		this.choices = copyChoiceMap(choices);
 		this.method = method;
 		this.decider = decider;
@@ -130,7 +134,12 @@ public class VotingPaper implements Iterable<Choice> {
 	 * Adds the given {@link Vote} to the election of this {@link VotingPaper}.
 	 * 
 	 * @param v
-	 *                the vote.
+	 *                the vote. Its method must be the same of this VotingPaper.
+	 * @throws IllegalStateException
+	 *                 if the election is closed.
+	 * @throws IllegalArgumentException
+	 *                 if the method of the vote is not the same of this
+	 *                 VotingPaper.
 	 */
 	public void addVote(Vote v) {
 		if (!isRunning())

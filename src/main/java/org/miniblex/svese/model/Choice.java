@@ -35,12 +35,9 @@ public class Choice {
 	public boolean equals(Object obj) {
 		if (this == obj)
 			return true;
-		if (obj == null)
-			return false;
 		if (!(obj instanceof Choice))
 			return false;
-		Choice other = (Choice) obj;
-		return this.name.equals(other.name);
+		return this.name.equals(((Choice) obj).name);
 	}
 
 	@Override

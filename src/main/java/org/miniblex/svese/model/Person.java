@@ -105,13 +105,23 @@ public class Person {
 		return result;
 	}
 
+	/**
+	 * Two {@link Choice}s are defined to be equals if they have the same ssn.
+	 */
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)
 			return true;
 		if (!(obj instanceof Person))
 			return false;
-		return ssn.equals(((Person) obj).ssn);
+		return this.ssn.equals(((Person) obj).ssn);
+	}
+
+	/**
+	 * Constructs a new Person. Should only be called by Spring Data JPA for
+	 * instantiating from the database.
+	 */
+	private Person() {
 	}
 
 }

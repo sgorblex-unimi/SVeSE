@@ -54,6 +54,8 @@ public class Session {
 	 *
 	 * @param params
 	 *                the session's parameters. Modification safe.
+	 * @param guarantors
+	 *                the {@link List} of session guarantors.
 	 * @throws SessionRunningException
 	 *                 if you try to initialize the session while it's running.
 	 */
