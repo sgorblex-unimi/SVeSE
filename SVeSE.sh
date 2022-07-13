@@ -21,6 +21,7 @@ Where VERB is one of:
 build-db	(re)creates PostgreSQL database
 run		runs the system
 run-sql	FILE	runs SQL from the given file in the PostgreSQL database
+run-tests	runs the tests (debug purposes)
 start-db	starts PostgreSQL database (debug purposes)
 stop-db		stops PostgreSQL database (debug purposes)"
 
@@ -81,6 +82,17 @@ run(){
 	db stop
 }
 
+runtests(){
+	checkdbexists
+	if dbrunning; then
+		db stop
+	fi
+	db start
+	trap "sleep 0" INT
+	! mvn test
+	db stop
+}
+
 startdb(){
 	checkdbexists
 	if dbrunning; then
@@ -135,6 +147,9 @@ case "$1" in
 		;;
 	run-sql)
 		runsql "$2"
+		;;
+	run-tests)
+		runtests
 		;;
 	start-db)
 		startdb
