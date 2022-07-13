@@ -22,7 +22,7 @@ public class Session {
 	private SessionParameters params; // all session parameters
 
 	// session state
-	private boolean isRunning = false;
+	private boolean isReady = false; // true when the administrator finished setting up
 	private final Map<Person, Boolean> approval; // stores guarantors and their approval of session parameters
 
 	/**
@@ -84,13 +84,51 @@ public class Session {
 	}
 
 	/**
+	 * Called by the admin when the session is ready. From this call on, the
+	 * guarantors may approve the session by calling {@code approve}.
+	 */
+	public void setReady() {
+		isReady = true;
+	}
+
+	/**
+	 * Returns {@code true} if the {@link Session} is ready to be approved,
+	 * {@code false} otherwise.
+	 *
+	 * @return ready state of the Session.
+	 */
+	public boolean isReady() {
+		return isReady;
+	}
+
+	/**
 	 * Returns {@code true} if the voting session is running, {@code false}
 	 * otherwise.
 	 *
 	 * @return {@code true} if the session is running, {@code false} otherwise.
 	 */
-	private boolean isRunning() {
-		return this.isRunning;
+	public boolean isRunning() {
+		LocalDateTime now = LocalDateTime.now();
+		return params.getStart().isBefore(now) && params.getEnd().isAfter(now) && checkApproval();
+	}
+
+	/**
+	 * Sets the given guarantor to approve the session and its parameters.
+	 *
+	 * @param p
+	 *                the guarantor.
+	 * @throws IllegalStateException
+	 *                 if the session is not ready to be approved.
+	 * @throws IllegalArgumentException
+	 *                 if the given {@link Person} is not a guarantor of the
+	 *                 session.
+	 */
+	public void approve(Person p) {
+		if (!isReady)
+			throw new IllegalStateException("the session is not ready to be approved");
+		if (!approval.containsKey(p))
+			throw new IllegalArgumentException("the given Person is not a guarantor of the session");
+		approval.put(p, true);
 	}
 
 	/**
@@ -122,7 +160,7 @@ public class Session {
 		if (admin.equals(p))
 			res.add(Role.ADMIN);
 		if (instance != null) {
-			if (instance.approval.containsKey(p))
+			if (instance.isReady && instance.approval.containsKey(p))
 				res.add(Role.GUARANTOR);
 		}
 		return res;
@@ -285,7 +323,7 @@ public class Session {
 
 	@Override
 	public String toString() {
-		return "Session[isRunning=" + isRunning + ", approval=" + approvalToString() + ",\nparams=" + params + "]";
+		return "Session[admin=" + admin + ", isReady=" + isReady + ", approval=" + approvalToString() + ",\nparams=" + params + "]";
 	}
 
 }

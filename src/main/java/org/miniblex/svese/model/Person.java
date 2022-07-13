@@ -124,4 +124,9 @@ public class Person {
 	private Person() {
 	}
 
+	@Override
+	public String toString() {
+		return "Person[\"" + firstName + " " + lastName + "\", ssn=" + ssn + "]";
+	}
+
 }
