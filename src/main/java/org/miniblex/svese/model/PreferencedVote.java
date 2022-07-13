@@ -12,7 +12,7 @@ public class PreferencedVote extends CategoricalVote {
 
 	/**
 	 * Constructs a new PreferencedVote with the given {@link Choice}.
-	 * 
+	 *
 	 * @param chosen
 	 *                the choice.
 	 */

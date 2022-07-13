@@ -8,7 +8,7 @@ public class ReferendumVote extends CategoricalVote {
 
 	/**
 	 * Constructs a new ReferendumVote with the given {@link Choice}.
-	 * 
+	 *
 	 * @param chosen
 	 *                the choice (assumed to be yes or no).
 	 */

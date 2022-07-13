@@ -43,7 +43,7 @@ public class VotingPaper implements Iterable<Choice> {
 
 	/**
 	 * Constructs a new {@link VotingPaper} with the given parameters.
-	 * 
+	 *
 	 * @param title
 	 *                the title of this VotingPaper.
 	 * @param choices
@@ -83,7 +83,7 @@ public class VotingPaper implements Iterable<Choice> {
 	/**
 	 * Returns {@code true} if the election represented by this {@link VotingPaper}
 	 * is running, {@code false} otherwise.
-	 * 
+	 *
 	 * @return {@code true} if the election is running, {@code false} otherwise.
 	 */
 	public boolean isRunning() {
@@ -93,7 +93,7 @@ public class VotingPaper implements Iterable<Choice> {
 	/**
 	 * Returns {@code true} if the given {@link Person} can vote in this
 	 * {@link VotingPaper}, {@code false} otherwise.
-	 * 
+	 *
 	 * @param p
 	 *                the person which may be able to vote.
 	 * @return {@code true} if the person can vote, {@code false} otherwise.
@@ -114,7 +114,7 @@ public class VotingPaper implements Iterable<Choice> {
 
 	/**
 	 * Returns the election method for this {@link VotingPaper}.
-	 * 
+	 *
 	 * @return the election method.
 	 */
 	public ElectionMethod getMethod() {
@@ -137,7 +137,7 @@ public class VotingPaper implements Iterable<Choice> {
 
 	/**
 	 * Adds the given {@link Vote} to the election of this {@link VotingPaper}.
-	 * 
+	 *
 	 * @param v
 	 *                the vote. Its method must be the same of this VotingPaper.
 	 * @throws IllegalStateException
@@ -198,7 +198,7 @@ public class VotingPaper implements Iterable<Choice> {
 		/**
 		 * Returns the turnout of the election represented by the containing
 		 * {@link VotingPaper} as a double between 0 and 1.
-		 * 
+		 *
 		 * @return election turnout.
 		 */
 		public double getTurnout() {
@@ -208,7 +208,7 @@ public class VotingPaper implements Iterable<Choice> {
 		/**
 		 * Returns the total number of votes for the election represented by the
 		 * containing {@link VotingPaper}.
-		 * 
+		 *
 		 * @return number of votes for the election.
 		 */
 		public long getTotalVotes() {
@@ -218,7 +218,7 @@ public class VotingPaper implements Iterable<Choice> {
 		/**
 		 * Returns the score of the given {@link Choice} for the election represented by
 		 * the containing {@link VotingPaper}.
-		 * 
+		 *
 		 * @param c
 		 *                the choice.
 		 * @return the score for the {@link Choice}.
@@ -237,7 +237,7 @@ public class VotingPaper implements Iterable<Choice> {
 		/**
 		 * Returns the relative score of the given {@link Choice} as a double between 0
 		 * and 1.
-		 * 
+		 *
 		 * @param c
 		 *                the choice.
 		 * @return the relative score for the {@link Choice}.
@@ -307,7 +307,7 @@ public class VotingPaper implements Iterable<Choice> {
 	/**
 	 * Returns a copy of this {@link VotingPaper}, as never utilized in a voting
 	 * session.
-	 * 
+	 *
 	 * @return a clone of this {@link VotingPaper}, omitting the status of the
 	 *         original (votes, running state).
 	 */

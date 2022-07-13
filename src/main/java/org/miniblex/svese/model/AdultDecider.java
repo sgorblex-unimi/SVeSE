@@ -22,7 +22,7 @@ public class AdultDecider implements VoteDecider {
 
 	/**
 	 * Constructs a new {@link AdultDecider} with the given age threshold.
-	 * 
+	 *
 	 * @param threshold
 	 *                the age threshold. Non negative.
 	 * @throws IllegalArgumentException

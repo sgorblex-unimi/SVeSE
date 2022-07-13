@@ -13,7 +13,7 @@ public class Choice {
 
 	/**
 	 * Constructs a new Choice with the given name.
-	 * 
+	 *
 	 * @param name
 	 *                the name.
 	 * @throws NullPointerException
@@ -25,7 +25,7 @@ public class Choice {
 
 	/**
 	 * Returns the name of this {@link Choice}.
-	 * 
+	 *
 	 * @return the name.
 	 */
 	public String getName() {

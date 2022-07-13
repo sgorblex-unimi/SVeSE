@@ -19,7 +19,7 @@ public class OrdinalVote implements Vote {
 
 	/**
 	 * Constructs a new OrdinalVote from the given ordered list of {@link Choice}s.
-	 * 
+	 *
 	 * @param order
 	 *                ordered list of choices for this vote, from most to least
 	 *                valuable.

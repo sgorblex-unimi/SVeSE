@@ -14,7 +14,7 @@ public class CategoricalVote implements Vote {
 
 	/**
 	 * Constructs a new CategoricalVote with the given choice.
-	 * 
+	 *
 	 * @param chosen
 	 *                the selected choice.
 	 */

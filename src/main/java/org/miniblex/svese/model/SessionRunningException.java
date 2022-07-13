@@ -13,7 +13,7 @@ public class SessionRunningException extends RuntimeException {
 
 	/**
 	 * Constructs a new SessionRunningException with the given detail message.
-	 * 
+	 *
 	 * @param msg
 	 *                the detail message.
 	 */

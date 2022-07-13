@@ -250,7 +250,7 @@ public class Session {
 		/**
 		 * Returns the list of {@link VotingPaper} of the {@link Session} described by
 		 * this {@link SessionParameters}.
-		 * 
+		 *
 		 * @return list of papers of the session. May be modified to add or remove
 		 *         {@link VotingPaper}s.
 		 */
@@ -270,7 +270,7 @@ public class Session {
 		/**
 		 * Returns a copy of this {@link SessionParameters}. Any parameter with state
 		 * has its state voided (e.g. VotingPapers do not contain votes).
-		 * 
+		 *
 		 * @return copy of this SessionParameters.
 		 */
 		public SessionParameters copy() {

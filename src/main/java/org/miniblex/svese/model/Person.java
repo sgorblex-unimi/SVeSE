@@ -26,7 +26,7 @@ public class Person {
 
 	/**
 	 * Returns this {@link Person}'s age.
-	 * 
+	 *
 	 * @return the age.
 	 */
 	public int age() {
@@ -35,7 +35,7 @@ public class Person {
 
 	/**
 	 * Returns the first name of this {@link Person}.
-	 * 
+	 *
 	 * @return first name.
 	 */
 	public String getFirstName() {
@@ -44,7 +44,7 @@ public class Person {
 
 	/**
 	 * Returns the last name of this {@link Person}.
-	 * 
+	 *
 	 * @return last name.
 	 */
 	public String getLastName() {
@@ -53,7 +53,7 @@ public class Person {
 
 	/**
 	 * Returns the social security number of this {@link Person}.
-	 * 
+	 *
 	 * @return social security number.
 	 */
 	public String getSsn() {
@@ -62,7 +62,7 @@ public class Person {
 
 	/**
 	 * Returns the birth date of this {@link Person}.
-	 * 
+	 *
 	 * @return birth date.
 	 */
 	public LocalDate getBirthDate() {
@@ -71,7 +71,7 @@ public class Person {
 
 	/**
 	 * Returns the birth place of this {@link Person}.
-	 * 
+	 *
 	 * @return birth place.
 	 */
 	public String getBirthPlace() {
