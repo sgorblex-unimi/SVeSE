@@ -11,6 +11,9 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * Implementation of a voting paper, which stores possible choices and, when
  * close, result of the single election.
@@ -40,6 +43,8 @@ public class VotingPaper implements Iterable<Choice> {
 	private final ElectionMethod method;
 	private final VoteDecider decider;
 	private final Set<Person> hasVoted = new HashSet<>();
+
+	private static final Logger logger = LoggerFactory.getLogger(VotingPaper.class);
 
 	/**
 	 * Constructs a new {@link VotingPaper} with the given parameters.
@@ -155,6 +160,7 @@ public class VotingPaper implements Iterable<Choice> {
 			throw new IllegalArgumentException("person " + p + " has already voted for paper \"" + getTitle() + "\"");
 		votes.add(v);
 		hasVoted.add(p);
+		logger.debug("Added vote: " + v + " by " + p);
 	}
 
 	/**
@@ -183,6 +189,7 @@ public class VotingPaper implements Iterable<Choice> {
 		private final double turnout; // turnout in [0,1]
 
 		private Results() {
+			logger.info("Generating results...");
 			List<Result> res = new ArrayList<>();
 			for (Choice c : getChoices()) {
 				long score = 0;
@@ -204,6 +211,7 @@ public class VotingPaper implements Iterable<Choice> {
 			double eligible = s.howManyEligible(decider);
 			this.turnout = totalVotes / eligible;
 			this.allResults = res;
+			logger.info("Results generated: " + this);
 		}
 
 		/**

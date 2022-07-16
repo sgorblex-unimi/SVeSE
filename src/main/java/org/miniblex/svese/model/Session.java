@@ -9,6 +9,8 @@ import java.util.Map;
 import java.util.Objects;
 
 import org.miniblex.svese.SVeSE;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Representation of the voting session and its properties. The system can
@@ -24,6 +26,8 @@ public class Session {
 	// session state
 	private boolean isReady = false; // true when the administrator finished setting up
 	private final Map<Person, Boolean> approval; // stores guarantors and their approval of session parameters
+
+	private static final Logger logger = LoggerFactory.getLogger(Session.class);
 
 	/**
 	 * Creates a new voting session. Should only be called by
@@ -72,6 +76,7 @@ public class Session {
 		if (isRunning())
 			throw new IllegalStateException("cannot initialize a running session");
 		instance = new Session(params, guarantors);
+		logger.info("Initialized " + instance);
 	}
 
 	/**
@@ -114,6 +119,7 @@ public class Session {
 	 */
 	public void setReady() {
 		isReady = true;
+		logger.info("Session set to ready");
 	}
 
 	/**
@@ -164,6 +170,7 @@ public class Session {
 		if (!approval.containsKey(p))
 			throw new IllegalArgumentException("person " + p + " is not a guarantor of the session");
 		approval.put(p, true);
+		logger.info("Session approved by " + p);
 	}
 
 	/**
@@ -213,6 +220,7 @@ public class Session {
 		if (getSession() != null)
 			throw new IllegalStateException("cannot change admin once the session is initialized");
 		admin = Objects.requireNonNull(administrator);
+		logger.info("Session administrator set to " + administrator);
 	}
 
 	/**

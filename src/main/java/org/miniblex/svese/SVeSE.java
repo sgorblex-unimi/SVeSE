@@ -8,6 +8,8 @@ import java.util.Optional;
 import org.miniblex.svese.model.Person;
 import org.miniblex.svese.model.PersonRepository;
 import org.miniblex.svese.model.Session;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -25,6 +27,7 @@ public class SVeSE {
 	public static String SYS_DESCRIPTION = "Sistema di Voto e Scrutinio Elettronico";
 
 	private static Path adminFilePath = Path.of("admin.txt");
+	private static final Logger logger = LoggerFactory.getLogger(SVeSE.class);
 
 	private static SVeSE context;
 
@@ -38,13 +41,12 @@ public class SVeSE {
 			String adminSsn = Files.readString(adminFilePath).trim();
 			Optional<Person> admin = personRepo.findById(adminSsn);
 			if (admin.isEmpty()) {
-				System.err.println("WARNING: the admin specified in " + adminFilePath + " is not a valid person!");
+				logger.warn("WARNING: the admin specified in " + adminFilePath + " is not a valid person!");
 			} else {
-				System.err.println("admin ssn is " + adminSsn);
 				Session.setAdmin(admin.get());
 			}
 		} catch (IOException e) {
-			System.err.println("WARNING: proceeding without setting admin");
+			logger.warn("WARNING: proceeding without setting admin");
 		}
 	}
 
