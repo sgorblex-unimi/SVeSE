@@ -75,12 +75,37 @@ public class Session {
 	}
 
 	/**
-	 * Returns a copy of the current Session parameters.
+	 * Returns a copy of the current Session parameters. The scope of this method is
+	 * during initialization or to retrieve the session's static parameters (e.g.
+	 * start and end time). To get a running session's voting papers in order to
+	 * vote, use {@code getPapers}.
 	 *
 	 * @return current session parameters. Modification safe.
 	 */
 	public SessionParameters getCurrentParameters() {
 		return params.copy();
+	}
+
+	/**
+	 * Returns a {@link List} with the {@link VotingPaper}s of this running or
+	 * concluded Session. The user may modify the single papers, but not the list.
+	 * This is the correct method to retrieve {@link VotingPaper}s for voting and
+	 * retrieving results. If you just need a copy of the paper list for reference
+	 * (initializing phase), please use {@code getCurrentParameters.getPaperList}.
+	 *
+	 * @return current session papers.
+	 */
+	public List<VotingPaper> getPapers() {
+		return List.copyOf(params.getPaperList());
+	}
+
+	/**
+	 * Returns the list of guarantors currently added for the session.
+	 *
+	 * @return current session guarantors.
+	 */
+	public List<Person> getGuarantors() {
+		return List.copyOf(approval.keySet());
 	}
 
 	/**
@@ -113,6 +138,16 @@ public class Session {
 	}
 
 	/**
+	 * Manually closes the session. Resets the state of ready and approval.
+	 */
+	public void forceClose() {
+		isReady = false;
+		for (Person p : approval.keySet()) {
+			approval.put(p, false);
+		}
+	}
+
+	/**
 	 * Sets the given guarantor to approve the session and its parameters.
 	 *
 	 * @param p
@@ -127,7 +162,7 @@ public class Session {
 		if (!isReady)
 			throw new IllegalStateException("the session is not ready to be approved");
 		if (!approval.containsKey(p))
-			throw new IllegalArgumentException("the given Person is not a guarantor of the session");
+			throw new IllegalArgumentException("person " + p + " is not a guarantor of the session");
 		approval.put(p, true);
 	}
 

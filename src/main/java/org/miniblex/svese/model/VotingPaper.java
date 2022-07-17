@@ -148,11 +148,11 @@ public class VotingPaper implements Iterable<Choice> {
 			throw new IllegalStateException("cannot add a vote to a closed election");
 		Objects.requireNonNull(v);
 		if (v.getMethod() != this.getMethod())
-			throw new IllegalArgumentException("vote not compatible with the election method of this paper");
+			throw new IllegalArgumentException("vote method " + v.getMethod() + " not compatible with election method" + this.getMethod() + " of paper \"" + getTitle() + "\"");
 		if (!decider.canVote(p))
-			throw new IllegalArgumentException("the given person cannot vote for this paper");
+			throw new IllegalArgumentException("person " + p + " cannot vote for paper " + getTitle());
 		if (hasVoted(p))
-			throw new IllegalArgumentException("the given person has already voted for this paper");
+			throw new IllegalArgumentException("person " + p + " has already voted for paper \"" + getTitle() + "\"");
 		votes.add(v);
 		hasVoted.add(p);
 	}
@@ -166,7 +166,7 @@ public class VotingPaper implements Iterable<Choice> {
 	 */
 	public Results getResults() {
 		if (Session.isRunning())
-			throw new IllegalStateException("election is still running");
+			throw new IllegalStateException("cannot get results when the session is running");
 		return new Results();
 	}
 
@@ -242,7 +242,7 @@ public class VotingPaper implements Iterable<Choice> {
 				if (r.getChoice().equals(c))
 					return r.getScore();
 			}
-			throw new IllegalArgumentException("the given choice was not present in this paper");
+			throw new IllegalArgumentException("choice \"" + c.getName() + "\" was not present in paper \"" + getTitle() + "\"");
 		}
 
 		/**
@@ -261,7 +261,7 @@ public class VotingPaper implements Iterable<Choice> {
 				if (r.getChoice().equals(c))
 					return r.getRelativeScore();
 			}
-			throw new IllegalArgumentException("the given choice was not present in this paper");
+			throw new IllegalArgumentException("choice \"" + c.getName() + "\" was not present in paper \"" + getTitle() + "\"");
 		}
 
 		@Override
