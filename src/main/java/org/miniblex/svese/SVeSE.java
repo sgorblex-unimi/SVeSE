@@ -26,11 +26,14 @@ public class SVeSE {
 
 	private static Path adminFilePath = Path.of("admin.txt");
 
+	private static SVeSE context;
+
 	@Autowired
 	private PersonRepository personRepo;
 
 	@EventListener(ApplicationReadyEvent.class)
 	private void postInit() {
+		context = this;
 		try {
 			String adminSsn = Files.readString(adminFilePath).trim();
 			Optional<Person> admin = personRepo.findById(adminSsn);
@@ -53,6 +56,16 @@ public class SVeSE {
 	 */
 	public static void main(String[] args) {
 		SpringApplication.run(SVeSE.class, args);
+	}
+
+	/**
+	 * Returns a valid {@link PersonRepository} if the application has been
+	 * successfully initialized.
+	 *
+	 * @return a {@link PersonRepository}.
+	 */
+	public static PersonRepository getPersonRepo() {
+		return context == null ? null : context.personRepo;
 	}
 
 	/**

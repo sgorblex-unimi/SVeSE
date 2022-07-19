@@ -8,13 +8,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+import org.miniblex.svese.SVeSE;
+
 /**
  * Representation of the voting session and its properties. The system can
  * handle only one voting session at a time, therefore a (slightly modified)
  * singleton pattern is used.
  */
-// TODO: have a method (possibly a JPA repository) to calculate turnout and keep
-// track of people who have voted.
 public class Session {
 	private static Session instance = null; // singleton implementation pointer
 	private static Person admin;
@@ -60,7 +60,7 @@ public class Session {
 	 * @param guarantors
 	 *                the {@link List} of session guarantors. The list must contain
 	 *                at least one {@link Person} and must not contain the admin.
-	 * @throws SessionRunningException
+	 * @throws IllegalStateException
 	 *                 if you try to initialize the session while it's running.
 	 * @throws NullPointerException
 	 *                 if {@code guarantors} or {@code params} or any of its
@@ -68,9 +68,9 @@ public class Session {
 	 * @throws IllegalArgumentException
 	 *                 if parameters or the guarantor list are invalid.
 	 */
-	public static void initializeSession(SessionParameters params, List<Person> guarantors) throws SessionRunningException {
-		if (instance != null && instance.isRunning())
-			throw new SessionRunningException();
+	public static void initializeSession(SessionParameters params, List<Person> guarantors) {
+		if (isRunning())
+			throw new IllegalStateException("cannot initialize a running session");
 		instance = new Session(params, guarantors);
 	}
 
@@ -107,9 +107,9 @@ public class Session {
 	 *
 	 * @return {@code true} if the session is running, {@code false} otherwise.
 	 */
-	public boolean isRunning() {
+	public static boolean isRunning() {
 		LocalDateTime now = LocalDateTime.now();
-		return params.getStart().isBefore(now) && params.getEnd().isAfter(now) && checkApproval();
+		return instance != null && instance.params.getStart().isBefore(now) && instance.params.getEnd().isAfter(now) && instance.checkApproval();
 	}
 
 	/**
@@ -178,6 +178,24 @@ public class Session {
 		if (getSession() != null)
 			throw new IllegalStateException("cannot change admin once the session is initialized");
 		admin = Objects.requireNonNull(administrator);
+	}
+
+	/**
+	 * Returns the number of registered {@link Person}s that can vote according to
+	 * the given {@link VoteDecider}.
+	 *
+	 * @param decider
+	 *                the {@link VoteDecider} to use.
+	 * @return number of people that can vote.
+	 */
+	public long howManyEligible(VoteDecider decider) {
+		PersonRepository personRepo = SVeSE.getPersonRepo();
+		List<Person> l = personRepo.findAll();
+		long count = 0;
+		for (Person p : l)
+			if (decider.canVote(p))
+				count++;
+		return count;
 	}
 
 	/**

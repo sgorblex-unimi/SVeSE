@@ -1,15 +1,15 @@
 package org.miniblex.svese.model;
 
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
 
 /**
  * Implementation of a voting paper, which stores possible choices and, when
@@ -37,9 +37,9 @@ public class VotingPaper implements Iterable<Choice> {
 	private final Map<Choice, VotingPaper> choices; // the keys are the available choices, the values are the optional suboptions
 							// papers
 	private final List<Vote> votes = new LinkedList<>();
-	private boolean isRunning = true;
 	private final ElectionMethod method;
 	private final VoteDecider decider;
+	private final Set<Person> hasVoted = new HashSet<>();
 
 	/**
 	 * Constructs a new {@link VotingPaper} with the given parameters.
@@ -81,16 +81,6 @@ public class VotingPaper implements Iterable<Choice> {
 	}
 
 	/**
-	 * Returns {@code true} if the election represented by this {@link VotingPaper}
-	 * is running, {@code false} otherwise.
-	 *
-	 * @return {@code true} if the election is running, {@code false} otherwise.
-	 */
-	public boolean isRunning() {
-		return isRunning;
-	}
-
-	/**
 	 * Returns {@code true} if the given {@link Person} can vote in this
 	 * {@link VotingPaper}, {@code false} otherwise.
 	 *
@@ -103,13 +93,15 @@ public class VotingPaper implements Iterable<Choice> {
 	}
 
 	/**
-	 * Closes the election of this {@link VotingPaper}.
+	 * Returns {@code true} if the given {@link Person} has voted in this
+	 * {@link VotingPaper}, {@code false} otherwise.
 	 *
-	 * After calling this method it won't any more be possible to add votes and it
-	 * will be possible to calculate the results.
+	 * @param p
+	 *                the person which may have voted.
+	 * @return {@code true} if the person has voted, {@code false} otherwise.
 	 */
-	public void close() {
-		isRunning = false;
+	public boolean hasVoted(Person p) {
+		return hasVoted.contains(p);
 	}
 
 	/**
@@ -136,31 +128,45 @@ public class VotingPaper implements Iterable<Choice> {
 	}
 
 	/**
-	 * Adds the given {@link Vote} to the election of this {@link VotingPaper}.
+	 * Adds the given {@link Vote} by the given {@link Person} to the election of
+	 * this {@link VotingPaper}. This is the only time a Person and their vote are
+	 * associated.
 	 *
 	 * @param v
 	 *                the vote. Its method must be the same of this VotingPaper.
+	 * @param p
+	 *                the person.
 	 * @throws IllegalStateException
 	 *                 if the election is closed.
 	 * @throws IllegalArgumentException
 	 *                 if the method of the vote is not the same of this
-	 *                 VotingPaper.
+	 *                 VotingPaper, if the given person cannot vote for this
+	 *                 VotingPaper or if they have already voted.
 	 */
-	public void addVote(Vote v) {
-		if (!isRunning())
+	public void addVote(Vote v, Person p) {
+		if (!Session.isRunning())
 			throw new IllegalStateException("cannot add a vote to a closed election");
 		Objects.requireNonNull(v);
 		if (v.getMethod() != this.getMethod())
 			throw new IllegalArgumentException("vote not compatible with the election method of this paper");
+		if (!decider.canVote(p))
+			throw new IllegalArgumentException("the given person cannot vote for this paper");
+		if (hasVoted(p))
+			throw new IllegalArgumentException("the given person has already voted for this paper");
 		votes.add(v);
+		hasVoted.add(p);
 	}
 
 	/**
 	 * Returns the {@link Results} for the election represented by this VotingPaper.
 	 *
 	 * @return the results.
+	 * @throws IllegalStateException
+	 *                 if the election of this paper is still running.
 	 */
 	public Results getResults() {
+		if (Session.isRunning())
+			throw new IllegalStateException("election is still running");
 		return new Results();
 	}
 
@@ -172,26 +178,31 @@ public class VotingPaper implements Iterable<Choice> {
 	 * Results' iterator iterates in descending order of score.
 	 */
 	public class Results implements Iterable<Results.Result> {
-		private final SortedSet<Result> allResults;
+		private final List<Result> allResults;
 		private final long totalVotes;
 		private final double turnout; // turnout in [0,1]
 
 		private Results() {
-			SortedSet<Result> res = new TreeSet<>(new Comparator<Result>() {
-				@Override
-				public int compare(Result res1, Result res2) {
-					return Math.toIntExact(res1.score - res2.score);
-				}
-			});
-			for (Choice c : choices.keySet()) {
+			List<Result> res = new ArrayList<>();
+			for (Choice c : getChoices()) {
 				long score = 0;
 				for (Vote v : votes) {
 					score += v.getValue(c);
 				}
 				res.add(new Result(c, score));
 			}
-			this.totalVotes = votes.size();
-			this.turnout = 42; // TODO: method to establish how many were eligible for voting (see Session)
+			res.sort(new Comparator<>() {
+				@Override
+				public int compare(Result res1, Result res2) {
+					return Math.toIntExact(res1.score - res2.score);
+				}
+			});
+			this.totalVotes = hasVoted.size();
+			Session s = Session.getSession();
+			if (s == null)
+				throw new IllegalStateException("cannot get the results: there is no session");
+			double eligible = s.howManyEligible(decider);
+			this.turnout = totalVotes / eligible;
 			this.allResults = res;
 		}
 
@@ -296,10 +307,28 @@ public class VotingPaper implements Iterable<Choice> {
 			 *
 			 * @return the relative score.
 			 */
-			public long getRelativeScore() {
-				return score / totalVotes;
+			public double getRelativeScore() {
+				int numChoices = getChoices().size();
+				int scorePerVote = getMethod() == ElectionMethod.ORDINAL ? (numChoices - 1) * numChoices / 2 : 1;
+				return (double) score / (totalVotes * scorePerVote);
 			}
 
+			@Override
+			public String toString() {
+				String prettyRelative = Double.toString(getRelativeScore() * 100);
+				prettyRelative = prettyRelative.length() < 4 ? prettyRelative : prettyRelative.substring(0, 4);
+				return "[\"" + getChoice().getName() + "\": " + getScore() + " (" + prettyRelative + "%)]";
+			}
+
+		}
+
+		@Override
+		public String toString() {
+			String res = "Results[paper=\"" + getTitle() + "\", totalVotes=" + getTotalVotes() + ", turnout=" + getTurnout() + ", results=\n";
+			for (Result r : this) {
+				res += r + "\n";
+			}
+			return res.trim() + "]";
 		}
 
 	}
@@ -353,10 +382,9 @@ public class VotingPaper implements Iterable<Choice> {
 		return res.trim() + "]";
 	}
 
-	// TODO: add number of registered votes
 	@Override
 	public String toString() {
-		return "VotingPaper[title=\"" + title + "\", method=" + method + ", isRunning=" + isRunning + ", decider=" + decider + ", choices=" + choicesToString() + "]";
+		return "VotingPaper[\"" + title + "\", method=" + method + ", decider=" + decider + ", voteNumber=" + hasVoted.size() + ", choices=" + choicesToString() + "]";
 	}
 
 }

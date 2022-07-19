@@ -54,7 +54,7 @@ public class Choice {
 
 	@Override
 	public String toString() {
-		return "Choice[name=\"" + name + "\"]";
+		return "Choice[\"" + name + "\"]";
 	}
 
 }
