@@ -20,7 +20,7 @@ import org.miniblex.svese.model.Role;
 import org.miniblex.svese.model.Session;
 import org.miniblex.svese.security.SecurityService;
 import org.miniblex.svese.views.logout.LogoutView;
-import org.miniblex.svese.views.stopPollingStation.StopPollingStationView;
+import org.miniblex.svese.views.guarantorsApprove.GuarantorsApproveView;
 import org.miniblex.svese.views.vote.VoteView;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -50,8 +50,10 @@ public class MainView extends AppLayout {
 		Collection<Role> roles = Session.getRoles(s.getAuthenticatedPerson());
 		tabs.add(createTab(VaadinIcon.LIST_SELECT, "Vote", VoteView.class));
 		if (roles.contains(Role.ADMIN)) {
-			tabs.add(createTab(VaadinIcon.STOP_COG, "Stop Polling Station", StopPollingStationView.class));
 			tabs.add(createTab(VaadinIcon.COGS, "New session", NewSessionView.class));
+		}
+		if (roles.contains(Role.GUARANTOR)) {
+			tabs.add(createTab(VaadinIcon.CHECK, "Approve", GuarantorsApproveView.class));
 		}
 		tabs.add(createTab(VaadinIcon.SIGN_OUT, "Logout", LogoutView.class));
 		return tabs.toArray(new Tab[tabs.size()]);
