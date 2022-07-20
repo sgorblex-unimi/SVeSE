@@ -20,6 +20,7 @@ import org.miniblex.svese.model.Role;
 import org.miniblex.svese.model.Session;
 import org.miniblex.svese.security.SecurityService;
 import org.miniblex.svese.views.logout.LogoutView;
+import org.miniblex.svese.views.consultResult.ConsultResultView;
 import org.miniblex.svese.views.guarantorsApprove.GuarantorsApproveView;
 import org.miniblex.svese.views.vote.VoteView;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -54,6 +55,10 @@ public class MainView extends AppLayout {
 		}
 		if (roles.contains(Role.GUARANTOR)) {
 			tabs.add(createTab(VaadinIcon.CHECK, "Approve", GuarantorsApproveView.class));
+		}
+		if (roles.contains(Role.GUARANTOR) || roles.contains(Role.ADMIN)) {
+			tabs.add(createTab(VaadinIcon.BOLT, "Consult result",
+					ConsultResultView.class));
 		}
 		tabs.add(createTab(VaadinIcon.SIGN_OUT, "Logout", LogoutView.class));
 		return tabs.toArray(new Tab[tabs.size()]);
