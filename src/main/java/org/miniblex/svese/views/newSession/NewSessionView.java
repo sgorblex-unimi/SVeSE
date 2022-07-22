@@ -32,6 +32,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class NewSessionView extends VerticalLayout {
 	private Dialog dialog = new Dialog();
 	private Html error = new Html("<b style='color:red'> Given parameters are null or not valid. Retry</b>");
+	private Html success = new Html("<b style='color:green'> Session was initialized successfully</b>");
 	private Button confirmButton;
 
 	private PersonRepository pr;
@@ -71,9 +72,12 @@ public class NewSessionView extends VerticalLayout {
 		Button confirmButton = new Button("Create new session", e -> {
 			try {
 				createNewSession();
+				success.setVisible(true);
+				error.setVisible(false);
 				dialog.close();
 			} catch (NullPointerException | IllegalArgumentException ex) {
 				error.setVisible(true);
+				success.setVisible(false);
 				dialog.close();
 			}
 		});
@@ -102,6 +106,7 @@ public class NewSessionView extends VerticalLayout {
 		HorizontalLayout form = new HorizontalLayout();
 		VerticalLayout basicComponents = new VerticalLayout();
 		error.setVisible(false);
+		success.setVisible(false);
 
 		confirmButton = new Button("Create new session", e -> {
 			dialog.open();
@@ -113,7 +118,7 @@ public class NewSessionView extends VerticalLayout {
 		endPicker = new DateTimePicker();
 		endPicker.setLabel("End of the voting session");
 
-		basicComponents.add(new Label("Session parameters"), startPicker, endPicker, error, confirmButton);
+		basicComponents.add(new Label("Session parameters"), startPicker, endPicker, error, success, confirmButton);
 		guarantorsGrid = new GuarantorsGrid(pr);
 
 		VerticalLayout guarantorsLayout = new VerticalLayout(new Label("Guarantors selection"),

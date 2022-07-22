@@ -46,17 +46,22 @@ public class GuarantorsApproveView extends VerticalLayout {
 			if (!s.isReady()) {
 				text.setText("Current session is not ready to be approved");
 				approveButton.setEnabled(false);
+			} else if (s.hasApproved(sec.getAuthenticatedPerson())) {
+				approveButton.setEnabled(false);
+				approveButton.setText("Already approved");
 			} else {
-				//text.setText(Session.getSession().toString());
 				this.add(createSessionLayout());
 				approveButton.setEnabled(true);
 			}
-		} catch (NullPointerException e) {
+		} catch (
+
+		NullPointerException e) {
 			text.setText("There is no session currently waiting to be approved");
 			approveButton.setEnabled(false);
 		} finally {
 			add(dialog, text, approveButton);
 		}
+
 		getStyle().set("position", "fixed").set("top", "0").set("right", "0").set("bottom", "0").set("left", "0")
 				.set("display", "flex").set("align-items", "center").set("justify-content", "center");
 	}
@@ -92,24 +97,24 @@ public class GuarantorsApproveView extends VerticalLayout {
 		return dialogLayout;
 	}
 
-	private VerticalLayout createSessionLayout(){
+	private VerticalLayout createSessionLayout() {
 		VerticalLayout vl = new VerticalLayout();
 		Session s = Session.getSession();
 		SessionParameters sp = s.getCurrentParameters();
 		vl.add(new Label("La sessione contiene i seguenti garanti:"));
-		for(Person p : s.getGuarantors()){
-			vl.add(new Label(p.getFirstName() + " " + p.getLastName() + " [" + p.getSsn() +  "] \n"));
+		for (Person p : s.getGuarantors()) {
+			vl.add(new Label(p.getFirstName() + " " + p.getLastName() + " [" + p.getSsn() + "] \n"));
 		}
 		vl.add(new Label("Inizio: " + sp.getStart().toString().replace("T", " ").split("\\.")[0]));
 		vl.add(new Label("Fine: " + sp.getEnd().toString().replace("T", " ").split("\\.")[0]));
 
 		List<VotingPaper> subvps = new ArrayList<>();
-		for(VotingPaper vp: s.getPapers()){
-			String vpString ="Voting Paper: \"" + vp.getTitle() + "\": [";
-			for(Choice c: vp.getChoices()){
+		for (VotingPaper vp : s.getPapers()) {
+			String vpString = "Voting Paper: \"" + vp.getTitle() + "\": [";
+			for (Choice c : vp.getChoices()) {
 				vpString += c.getName();
 				VotingPaper sub = vp.getSubPaper(c);
-				if(sub!=null){
+				if (sub != null) {
 					vpString += " --> " + sub.getTitle() + ", ";
 					subvps.add(sub);
 				} else {
@@ -119,11 +124,11 @@ public class GuarantorsApproveView extends VerticalLayout {
 			vpString += "]";
 			vl.add(new Label(vpString));
 		}
-		for(VotingPaper vp: subvps){
-			String vpString ="Voting Paper: \"" + vp.getTitle() + "\": [";
-			for(Choice c: vp.getChoices()){
+		for (VotingPaper vp : subvps) {
+			String vpString = "Voting Paper: \"" + vp.getTitle() + "\": [";
+			for (Choice c : vp.getChoices()) {
 				vpString += c.getName();
-					vpString += ", ";
+				vpString += ", ";
 			}
 			vpString += "]";
 			vl.add(new Label(vpString));

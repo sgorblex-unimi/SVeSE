@@ -6,7 +6,6 @@ import java.util.List;
 
 import javax.annotation.security.RolesAllowed;
 
-import com.vaadin.base.devserver.DevServerOutputTracker.Result;
 import com.vaadin.flow.component.Html;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.dialog.Dialog;
@@ -19,6 +18,7 @@ import org.miniblex.svese.model.Choice;
 import org.miniblex.svese.model.Session;
 import org.miniblex.svese.model.VotingPaper;
 import org.miniblex.svese.model.VotingPaper.Results;
+import org.miniblex.svese.model.VotingPaper.Results.Result;
 import org.miniblex.svese.views.main.MainView;
 
 /**
@@ -86,14 +86,15 @@ public class ConsultResultView extends VerticalLayout {
 		Dialog d = new Dialog();
 		VerticalLayout vl = new VerticalLayout();
 		vl.setPadding(false);
-		Results r = vp.getResults();
+		Results results = vp.getResults();
 		String result = "<dl>" + vp.getTitle();
-		for (Choice c : vp.getChoices()) {
-			result += "<dt>" + c.getName() + " - Punteggio: " + r.getScore(c) + "(" + round(r.getRelativeScore(c) * 100, 2)
-					+ "%) </dt>";
+		for (Result r : results) {
+			result += "<dt>" + r.getChoice().getName() + " - Punteggio: " + r.getScore() + "("
+					+ round(r.getRelativeScore() * 100, 2) + "%) </dt>";
 		}
-		result += "In totale sono stati registrati " + r.getTotalVotes() + " voti, con un affluenza del "
-				+ round(r.getTurnout() * 100, 2) + "%.";
+		result += "In totale sono stati registrati " + results.getTotalVotes() + " voti, con un affluenza del "
+				+ round(results.getTurnout() * 100, 2) + "%.<br>";
+		result += "Il vincitore è " + results.iterator().next().getChoice().getName();
 		result += "</dl>";
 
 		Html resultHtml = new Html(result);
@@ -139,22 +140,23 @@ public class ConsultResultView extends VerticalLayout {
 	}
 
 	public Html createCategoricalTable(VotingPaper vp) {
-		Results r = vp.getResults();
+		Results results = vp.getResults();
 		String result = "<table>";
 		result += "<caption>" + vp.getTitle() + "</caption>";
 		result += "<th>Nome</th><th>Voti</th><th>Percentuale</th>";
-		for (Choice c : vp.getChoices()) {
+		for (Result r : results) {
 			result += "<tr>";
-			result += "<td style=\"text-align: center; vertical-align: middle;\">" + c.getName() + "</td>";
-			result += "<td style=\"text-align: center; vertical-align: middle;\">" + r.getScore(c) + "</td>";
-			result += "<td style=\"text-align: center; vertical-align: middle;\">" + round(r.getRelativeScore(c) * 100, 2)
+			result += "<td style=\"text-align: center; vertical-align: middle;\">" + r.getChoice().getName() + "</td>";
+			result += "<td style=\"text-align: center; vertical-align: middle;\">" + r.getScore() + "</td>";
+			result += "<td style=\"text-align: center; vertical-align: middle;\">" + round(r.getRelativeScore() * 100, 2)
 					+ "% </td>";
 			result += "</tr>";
 		}
 		result += "<tr><td style=\"text-align: center; vertical-align: middle;\"> Voti totali e <br> affluenza</td>";
-		result += "<td style=\"text-align: center; vertical-align: middle;\">" + r.getTotalVotes() + "</td>";
-		result += "<td style=\"text-align: center; vertical-align: middle;\">" + round(r.getTurnout() * 100, 2)
+		result += "<td style=\"text-align: center; vertical-align: middle;\">" + results.getTotalVotes() + "</td>";
+		result += "<td style=\"text-align: center; vertical-align: middle;\">" + round(results.getTurnout() * 100, 2)
 				+ "%</td></tr>";
+		result += "Il vincitore è " + results.iterator().next().getChoice().getName();
 		result += "</table>";
 		return new Html(result);
 	}

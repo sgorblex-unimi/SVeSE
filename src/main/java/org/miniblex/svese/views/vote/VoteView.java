@@ -39,11 +39,12 @@ public class VoteView extends VerticalLayout {
 		HorizontalLayout buttonLayout = new HorizontalLayout();
 		votingButtons = new ArrayList<Button>();
 		voter = sec.getAuthenticatedPerson();
-		;
+		boolean morePapers;
 
 		try {
 			Session s = Session.getSession();
 			if (Session.isRunning()) {
+				morePapers = false;
 				for (VotingPaper vp : s.getPapers()) {
 					Button b = new Button(vp.getTitle(), e -> {
 						voteDialog = new Dialog();
@@ -67,14 +68,23 @@ public class VoteView extends VerticalLayout {
 								break;
 						}
 					});
+					if (vp.hasVoted(sec.getAuthenticatedPerson())) {
+						b.setEnabled(false);
+					} else {
+						b.setEnabled(true);
+						morePapers = true;
+					}
 					votingButtons.add(b);
 				}
-				for (Button b : votingButtons) {
-					b.setEnabled(true);
-					buttonLayout.add(b);
+				if (morePapers) {
+					for (Button b : votingButtons) {
+						buttonLayout.add(b);
+					}
+					error.setText("");
+					add(buttonLayout);
+				} else {
+					error.setText("Alreay voted in all the avaiable voting paper");
 				}
-				error.setText("");
-				add(buttonLayout);
 			} else {
 				error.setText("The session has not been started yet");
 			}
