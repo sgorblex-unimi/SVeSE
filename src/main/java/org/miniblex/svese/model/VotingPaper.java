@@ -63,13 +63,16 @@ public class VotingPaper implements Iterable<Choice> {
 	 *                decides if a person can vote for this VotingPaper. Set it to
 	 *                {@code null} if anyone can vote.
 	 * @throws IllegalArgumentException
-	 *                 if trying to add subpapers in a non PREFERENCED paper.
+	 *                 if trying to add subpapers in a non PREFERENCED paper or if
+	 *                 there are zero choices.
 	 */
 	public VotingPaper(String title, Map<Choice, VotingPaper> choices, ElectionMethod method, VoteDecider decider) {
 		if (method != ElectionMethod.PREFERENCED)
 			for (VotingPaper sub : choices.values())
 				if (sub != null)
 					throw new IllegalArgumentException("cannot add subchoices for an election method different from " + ElectionMethod.PREFERENCED);
+		if (choices.size() == 0)
+			throw new IllegalArgumentException("cannot create a paper with no choices");
 		this.title = Objects.requireNonNull(title);
 		this.choices = copyChoiceMap(Objects.requireNonNull(choices));
 		this.method = Objects.requireNonNull(method);
@@ -154,7 +157,7 @@ public class VotingPaper implements Iterable<Choice> {
 		Objects.requireNonNull(v);
 		if (v.getMethod() != this.getMethod())
 			throw new IllegalArgumentException("vote method " + v.getMethod() + " not compatible with election method" + this.getMethod() + " of paper \"" + getTitle() + "\"");
-		if (!decider.canVote(p))
+		if (!canVote(p))
 			throw new IllegalArgumentException("person " + p + " cannot vote for paper " + getTitle());
 		if (hasVoted(p))
 			throw new IllegalArgumentException("person " + p + " has already voted for paper \"" + getTitle() + "\"");
@@ -190,8 +193,9 @@ public class VotingPaper implements Iterable<Choice> {
 
 		private Results() {
 			logger.info("Generating results...");
-			List<Result> res = new ArrayList<>();
-			for (Choice c : getChoices()) {
+			Set<Choice> choices = getChoices();
+			List<Result> res = new ArrayList<>(choices.size());
+			for (Choice c : choices) {
 				long score = 0;
 				for (Vote v : votes) {
 					score += v.getValue(c);

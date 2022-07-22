@@ -154,6 +154,23 @@ public class Session {
 	}
 
 	/**
+	 * Returns {@code true} if the given guarantor has approved the initialized
+	 * session, {@code false} otherwise.
+	 *
+	 * @param p
+	 *                a guarantor of the session.
+	 * @return {@code true} if the person has approved the session, {@code false}
+	 *         otherwise.
+	 * @throws IllegalArgumentException
+	 *                 if p is not a guarantor of the session.
+	 */
+	public boolean hasApproved(Person p) {
+		if (!approval.containsKey(p))
+			throw new IllegalArgumentException("person " + p + " is not a guarantor of the session");
+		return approval.get(p);
+	}
+
+	/**
 	 * Sets the given guarantor to approve the session and its parameters.
 	 *
 	 * @param p
@@ -202,7 +219,7 @@ public class Session {
 		if (admin.equals(p))
 			res.add(Role.ADMIN);
 		if (instance != null) {
-			if (instance.isReady && instance.approval.containsKey(p))
+			if (instance.approval.containsKey(p))
 				res.add(Role.GUARANTOR);
 		}
 		return res;

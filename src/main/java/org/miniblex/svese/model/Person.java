@@ -106,7 +106,7 @@ public class Person {
 	}
 
 	/**
-	 * Two {@link Choice}s are defined to be equals if they have the same ssn.
+	 * Two {@link Person}s are defined to be equals if they have the same ssn.
 	 */
 	@Override
 	public boolean equals(Object obj) {
