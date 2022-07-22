@@ -47,6 +47,30 @@ public class VotingPaper implements Iterable<Choice> {
 	private static final Logger logger = LoggerFactory.getLogger(VotingPaper.class);
 
 	/**
+	 * Returns {@code true} if the current state of the class representation is
+	 * correct, {@code false} otherwise. Implementation of the representation
+	 * invariant.
+	 *
+	 * @return {@code true} if the representation is correct, {@code false}
+	 *         otherwise.
+	 */
+	boolean repOk() {
+		if (title == null && choices == null && votes == null && method == null && hasVoted == null)
+			return false;
+		if (method != ElectionMethod.PREFERENCED)
+			for (VotingPaper sub : choices.values())
+				if (sub != null)
+					return false;
+		for (Vote v : votes)
+			if (v.getMethod() != method)
+				return false;
+		for (Person p : hasVoted)
+			if (!canVote(p))
+				return false;
+		return hasVoted.size() == votes.size();
+	}
+
+	/**
 	 * Constructs a new {@link VotingPaper} with the given parameters.
 	 *
 	 * @param title
@@ -77,6 +101,7 @@ public class VotingPaper implements Iterable<Choice> {
 		this.choices = copyChoiceMap(Objects.requireNonNull(choices));
 		this.method = Objects.requireNonNull(method);
 		this.decider = decider;
+		assert repOk();
 	}
 
 	/**
@@ -164,6 +189,7 @@ public class VotingPaper implements Iterable<Choice> {
 		votes.add(v);
 		hasVoted.add(p);
 		logger.debug("Added vote: " + v + " by " + p);
+		assert repOk();
 	}
 
 	/**
@@ -191,6 +217,17 @@ public class VotingPaper implements Iterable<Choice> {
 		private final long totalVotes;
 		private final double turnout; // turnout in [0,1]
 
+		/**
+		 * Returns {@code true} if the current state of the class representation is
+		 * correct, {@code false} otherwise.
+		 *
+		 * @return {@code true} if the representation is correct, {@code false}
+		 *         otherwise.
+		 */
+		boolean repOk() {
+			return allResults != null && allResults.size() == choices.size();
+		}
+
 		private Results() {
 			logger.info("Generating results...");
 			Set<Choice> choices = getChoices();
@@ -216,6 +253,7 @@ public class VotingPaper implements Iterable<Choice> {
 			this.turnout = totalVotes / eligible;
 			this.allResults = res;
 			logger.info("Results generated: " + this);
+			assert repOk();
 		}
 
 		/**

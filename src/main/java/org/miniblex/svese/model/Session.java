@@ -30,6 +30,17 @@ public class Session {
 	private static final Logger logger = LoggerFactory.getLogger(Session.class);
 
 	/**
+	 * Returns {@code true} if the current state of the class representation is
+	 * correct, {@code false} otherwise.
+	 *
+	 * @return {@code true} if the representation is correct, {@code false}
+	 *         otherwise.
+	 */
+	boolean repOk() {
+		return instance == this && params != null && approval != null;
+	}
+
+	/**
 	 * Creates a new voting session. Should only be called by
 	 * {@code initializeSession}.
 	 */
@@ -76,6 +87,7 @@ public class Session {
 		if (isRunning())
 			throw new IllegalStateException("cannot initialize a running session");
 		instance = new Session(params, guarantors);
+		assert instance.repOk();
 		logger.info("Initialized " + instance);
 	}
 
@@ -120,6 +132,7 @@ public class Session {
 	public void setReady() {
 		isReady = true;
 		logger.info("Session set to ready");
+		assert repOk();
 	}
 
 	/**
@@ -151,6 +164,7 @@ public class Session {
 		for (Person p : approval.keySet()) {
 			approval.put(p, false);
 		}
+		assert repOk();
 	}
 
 	/**
@@ -188,6 +202,7 @@ public class Session {
 			throw new IllegalArgumentException("person " + p + " is not a guarantor of the session");
 		approval.put(p, true);
 		logger.info("Session approved by " + p);
+		assert repOk();
 	}
 
 	/**
