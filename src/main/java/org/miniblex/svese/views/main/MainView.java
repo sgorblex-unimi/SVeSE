@@ -16,6 +16,7 @@ import com.vaadin.flow.component.tabs.Tabs;
 import com.vaadin.flow.router.RouterLink;
 
 import org.miniblex.svese.views.newSession.NewSessionView;
+import org.miniblex.svese.views.sessionManagement.SessionManagement;
 import org.miniblex.svese.model.Role;
 import org.miniblex.svese.model.Session;
 import org.miniblex.svese.security.SecurityService;
@@ -53,11 +54,14 @@ public class MainView extends AppLayout {
 		if (roles.contains(Role.ADMIN)) {
 			tabs.add(createTab(VaadinIcon.COGS, "New session", NewSessionView.class));
 		}
+		if (roles.contains(Role.ADMIN)) {
+			tabs.add(createTab(VaadinIcon.SLIDERS, "Manage session", SessionManagement.class));
+		}
 		if (roles.contains(Role.GUARANTOR)) {
-			tabs.add(createTab(VaadinIcon.CHECK, "Approve", GuarantorsApproveView.class));
+			tabs.add(createTab(VaadinIcon.CLIPBOARD_CHECK, "Approve", GuarantorsApproveView.class));
 		}
 		if (roles.contains(Role.GUARANTOR) || roles.contains(Role.ADMIN)) {
-			tabs.add(createTab(VaadinIcon.BOLT, "Consult result",
+			tabs.add(createTab(VaadinIcon.CHART, "Consult result",
 					ConsultResultView.class));
 		}
 		tabs.add(createTab(VaadinIcon.SIGN_OUT, "Logout", LogoutView.class));
